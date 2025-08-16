@@ -1,0 +1,236 @@
+{
+  "tools": [
+    {
+      "name": "takeoff",
+      "description": "Initiates the drone's automatic takeoff sequence...",
+      "direct_triggers": [
+        "takeoff",
+        "take off",
+        "launch"
+      ],
+      "parameters": [],
+      "ros_service": "/takeoff",
+      "service_type": "Trigger"
+    },
+    {
+      "name": "land",
+      "description": "Initiates the drone's automatic landing sequence...",
+      "direct_triggers": [
+        "land",
+        "touch down"
+      ],
+      "parameters": [],
+      "ros_service": "/land",
+      "service_type": "Trigger"
+    },
+    {
+      "name": "move_forward",
+      "description": "Move the drone forward in a straight line by a specified distance in meters once.",
+      "direct_triggers": [
+        "go forward",
+        "go ahead",
+        {
+          "pattern": "^(fly|move|go) forward ([\\d\\.]+) ?(m|meter|meters|cm|centimeters)?$",
+          "params": [
+            {
+              "name": "distance",
+              "group": 2,
+              "unit_group": 3
+            }
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "distance",
+          "type": "number",
+          "description": "The distance to move forward, in meters. The value must be between 0.2 and 5.0.",
+          "default": 1.0
+        }
+      ],
+      "ros_service": "/move_forward",
+      "service_type": "Move"
+    },
+    {
+      "name": "move_backward",
+      "description": "Moves the drone backward in a straight line by a specified distance in meters once.",
+      "direct_triggers": [
+        {
+          "pattern": "^(fly|move|go) backward ([\\d\\.]+) ?(m|meter|meters|cm|centimeters)?$",
+          "params": [
+            {
+              "name": "distance",
+              "group": 2,
+              "unit_group": 3
+            }
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "distance",
+          "type": "number",
+          "description": "The distance to move backward, in meters...",
+          "default": 1.0
+        }
+      ],
+      "ros_service": "/move_backward",
+      "service_type": "Move"
+    },
+    {
+      "name": "move_left",
+      "description": "translation moves the drone left in a straight line by a specified distance in meters once.",
+      "direct_triggers": [
+        {
+          "pattern": "^(fly|move|go) left ([\\d\\.]+) ?(m|meter|meters|cm|centimeters)?$",
+          "params": [
+            {
+              "name": "distance",
+              "group": 2,
+              "unit_group": 3
+            }
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "distance",
+          "type": "number",
+          "description": "The distance to translation move left, in meters. The value must be between 0.2 and 5.0.",
+          "default": 1.0
+        }
+      ],
+      "ros_service": "/move_left",
+      "service_type": "Move"
+    },
+    {
+      "name": "move_right",
+      "description": "translation moves the drone right in a straight line by a specified distance in meters once.",
+      "direct_triggers": [
+        {
+          "pattern": "^(fly|move|go) right ([\\d\\.]+) ?(m|meter|meters|cm|centimeters)?$",
+          "params": [
+            {
+              "name": "distance",
+              "group": 2,
+              "unit_group": 3
+            }
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "distance",
+          "type": "number",
+          "description": "The distance to translation move right, in meters. The value must be between 0.2 and 5.0.",
+          "default": 1.0
+        }
+      ],
+      "ros_service": "/move_right",
+      "service_type": "Move"
+    },
+    {
+      "name": "move_up",
+      "description": "Moves the drone up in a straight line by a specified distance in meters once.",
+      "direct_triggers": [
+        {
+          "pattern": "^(fly|move|go) up ([\\d\\.]+) ?(m|meter|meters|cm|centimeters)?$",
+          "params": [
+            {
+              "name": "distance",
+              "group": 2,
+              "unit_group": 3
+            }
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "distance",
+          "type": "number",
+          "description": "The distance to move up, in meters. The value must be between 0.2 and 5.0.",
+          "default": 0.5
+        }
+      ],
+      "ros_service": "/move_up",
+      "service_type": "Move"
+    },
+    {
+      "name": "move_down",
+      "description": "Moves the drone down in a straight line by a specified distance in meters once.",
+      "direct_triggers": [
+        {
+          "pattern": "^(fly|move|go) down ([\\d\\.]+) ?(m|meter|meters|cm|centimeters)?$",
+          "params": [
+            {
+              "name": "distance",
+              "group": 2,
+              "unit_group": 3
+            }
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "distance",
+          "type": "number",
+          "description": "The distance to move down, in meters. The value must be between 0.2 and 5.0.",
+          "default": 0.5
+        }
+      ],
+      "ros_service": "/move_down",
+      "service_type": "Move"
+    },
+    {
+      "name": "rotate_clockwise",
+      "description": "Rotates the drone clockwise (to the right) once.",
+      "direct_triggers": [
+        "turn right",
+        {
+          "pattern": "^(turn|rotate) (right|clockwise) ([\\d\\.]+) ?(deg|degree|degrees|rad|radian|radians)?$",
+          "params": [
+            {
+              "name": "angle",
+              "group": 3,
+              "unit_group": 4
+            }
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "angle",
+          "type": "number",
+          "description": "The angle to rotate, in radians once."
+        }
+      ],
+      "ros_service": "/rotate_clockwise",
+      "service_type": "Move"
+    },
+    {
+      "name": "rotate_counter_clockwise",
+      "description": "Rotates the drone counter-clockwise (to the left) once.",
+      "direct_triggers": [
+        {
+          "pattern": "^(turn|rotate) (left|counter[- ]?clockwise) ([\\d\\.]+) ?(deg|degree|degrees|rad|radian|radians)?$",
+          "params": [
+            {
+              "name": "angle",
+              "group": 3,
+              "unit_group": 4
+            }
+          ]
+        }
+      ],
+      "parameters": [
+        {
+          "name": "angle",
+          "type": "number",
+          "description": "The angle to rotate, in radians once."
+        }
+      ],
+      "ros_service": "/rotate_counter_clockwise",
+      "service_type": "Move"
+    }
+  ]
+}
