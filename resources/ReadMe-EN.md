@@ -83,9 +83,9 @@ $ ollama pull qwen3:8b
 
 ----
 # How to Use
+We provide multiple usage modes, including testing on a real device and a model, testing a model independently, and testing a model and a mock.
 
 ## Stopping Unnecessary Models
-We provide multiple usage modes, including testing on a real device and a model, testing a model independently, and testing a model and a mock.
 
 Before calling a model, to prevent resources from being preempted by an open model, you can terminate the running model using the following command:
 
