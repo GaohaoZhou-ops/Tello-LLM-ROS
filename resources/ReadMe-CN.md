@@ -85,6 +85,10 @@ $ ollama pull qwen3:8b
 # 如何使用
 我们提供了多种使用模式，包括真机与模型联合测试、模型独立测试、模型与mock联合测试。
 
+如果你想要通过 XBox 手柄对无人机实现控制，可以使用我们另一个开源仓库：
+
+* XBox Controller Reader: [https://github.com/GaohaoZhou-ops/XboxControllerReader](https://github.com/GaohaoZhou-ops/XboxControllerReader)
+
 ## 停止多余模型
 
 在调用模型前，为了避免资源被未关闭的模型抢占，你可以通过下面的命令来关停正在运行的模型：
