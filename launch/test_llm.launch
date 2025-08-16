@@ -8,10 +8,10 @@
 
     <!-- DeepSeek -->
     <!-- <arg name="ollama_model" default="deepseek-r1:1.5b" doc="The Ollama model to use"/> -->
-    <arg name="ollama_model" default="deepseek-r1:8b" doc="The Ollama model to use"/>
+    <!-- <arg name="ollama_model" default="deepseek-r1:8b" doc="The Ollama model to use"/> -->
 
     <!-- Qwen3 -->
-    <!-- <arg name="ollama_model" default="qwen3:4b" doc="The Ollama model to use"/> -->
+    <arg name="ollama_model" default="qwen3:4b" doc="The Ollama model to use"/>
     <!-- <arg name="ollama_model" default="qwen3:8b" doc="The Ollama model to use"/> -->
     <!-- <arg name="ollama_model" default="qwen3:14b" doc="The Ollama model to use"/> -->
 

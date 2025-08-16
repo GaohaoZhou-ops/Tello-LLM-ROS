@@ -138,8 +138,8 @@ class LLMOfflineTester:
                 
                 tokens_per_second = total_tokens / duration_s if duration_s > 0 else 0
                 
-                stats_str = (f"Time: {duration_s:.2f}s | "
-                             f"Speed: {tokens_per_second:.2f} t/s | "
+                stats_str = (f"Time: {duration_s:.2f} s | "
+                             f"Speed: {tokens_per_second:.2f} tokens/s | "
                              f"Tokens: {total_tokens} (p: {prompt_tokens}, c: {completion_tokens})")
                 rospy.loginfo(f"{bcolors.HEADER}LLM Stats:{bcolors.ENDC} {stats_str}")
 
