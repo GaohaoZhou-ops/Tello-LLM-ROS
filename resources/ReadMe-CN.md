@@ -4,7 +4,7 @@
 
 # Benchmarks
 
-## Local Model Test
+## 本地模型测试
 当前我们仅在 `Nvidia Jetson Orin 64GB DK` 这个硬件上开展了实验，未来我们会尝试在更丰富的硬件设备上进行测试。实验环境的系统与库信息如下：
 
 ![jetson_release](./jetson_release.png)
