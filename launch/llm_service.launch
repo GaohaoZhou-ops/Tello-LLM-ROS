@@ -1,7 +1,7 @@
 <launch>
     <arg name="model_type"      default="deepseek"/>
     <arg name="model_name"      default="deepseek-chat"/>
-    <arg name="api_key"         default="sk-79df7ada672542ddbce5ce6a64cbe3a1" /> 
+    <arg name="api_key"         default="Your API Key" /> 
     
     <arg name="common_prompt"   default="$(find tello_llm_ros)/config/prompts/common_system_prompt-EN.txt"/>
     <arg name="tools_prompt"    default="$(find tello_llm_ros)/config/prompts/pure_text_tools_description-EN.txt"/>
