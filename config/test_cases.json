@@ -1,0 +1,168 @@
+{
+    "test_cases": [
+        {
+            "prompt": "Take off.",
+            "expected_commands": [
+                "takeoff"
+            ]
+        },
+        {
+            "prompt": "Land the drone.",
+            "expected_commands": [
+                "land"
+            ]
+        },
+        {
+            "prompt": "向前飞1米",
+            "expected_commands": [
+                "move_forward 1m"
+            ]
+        },
+        {
+            "prompt": "向后飞50厘米",
+            "expected_commands": [
+                "move_backward 0.5m"
+            ]
+        },
+        {
+            "prompt": "Take off, go up 1 meter, then land.",
+            "expected_commands": [
+                "takeoff",
+                "move_up 1m",
+                "land"
+            ]
+        },
+        {
+            "prompt": "先起飞, 然后向左平移半米, 最后降落",
+            "expected_commands": [
+                "takeoff",
+                "move_left 0.5m",
+                "land"
+            ]
+        },
+        {
+            "prompt": "Turn right 90 degrees.",
+            "expected_commands": [
+                "rotate_clockwise 90 degrees"
+            ]
+        },
+        {
+            "prompt": "向左旋转180度",
+            "expected_commands": [
+                "rotate_counter_clockwise 180 degrees"
+            ]
+        },
+        {
+            "prompt": "Fly a triangle with 1.5m sides.",
+            "expected_commands": [
+                "move_forward 1.5m",
+                "rotate_clockwise 120 degrees",
+                "move_forward 1.5m",
+                "rotate_clockwise 120 degrees",
+                "move_forward 1.5m"
+            ]
+        },
+        {
+            "prompt": "飞一个1米边长的等边三角形",
+            "expected_commands": [
+                "move_forward 1m",
+                "rotate_clockwise 120 degrees",
+                "move_forward 1m",
+                "rotate_clockwise 120 degrees",
+                "move_forward 1m"
+            ]
+        },
+        {
+            "prompt": "Fly up 2 meters, then come down 1 meter.",
+            "expected_commands": [
+                "move_up 2m",
+                "move_down 1m"
+            ]
+        },
+        {
+            "prompt": "做一个“上上下下”的动作，每次半米",
+            "expected_commands": [
+                "move_up 0.5m",
+                "move_down 0.5m",
+                "move_down 0.5m",
+                "move_up 0.5m"
+            ]
+        },
+        {
+            "prompt": "Fly a rectangle 2m long and 1m wide.",
+            "expected_commands": [
+                "move_forward 2m",
+                "rotate_clockwise 90 degrees",
+                "move_forward 1m",
+                "rotate_clockwise 90 degrees",
+                "move_forward 2m",
+                "rotate_clockwise 90 degrees",
+                "move_forward 1m"
+            ]
+        },
+        {
+            "prompt": "飞一个长2米，宽1米的长方形",
+            "expected_commands": [
+                "move_forward 2m",
+                "rotate_clockwise 90 degrees",
+                "move_forward 1m",
+                "rotate_clockwise 90 degrees",
+                "move_forward 2m",
+                "rotate_clockwise 90 degrees",
+                "move_forward 1m"
+            ]
+        },
+        {
+            "prompt": "Go forward 3 meters, then return to start.",
+            "expected_commands": [
+                "move_forward 3m",
+                "move_backward 3m"
+            ]
+        },
+        {
+            "prompt": "向前飞3米，然后飞回来",
+            "expected_commands": [
+                "move_forward 3m",
+                "move_backward 3m"
+            ]
+        },
+        {
+            "prompt": "Fly a staircase pattern: go up 50cm, forward 50cm, three times.",
+            "expected_commands": [
+                "move_up 0.5m",
+                "move_forward 0.5m",
+                "move_up 0.5m",
+                "move_forward 0.5m",
+                "move_up 0.5m",
+                "move_forward 0.5m"
+            ]
+        },
+        {
+            "prompt": "飞一个三级的楼梯，每级高半米，长半米",
+            "expected_commands": [
+                "move_up 0.5m",
+                "move_forward 0.5m",
+                "move_up 0.5m",
+                "move_forward 0.5m",
+                "move_up 0.5m",
+                "move_forward 0.5m"
+            ]
+        },
+        {
+            "prompt": "Look left, then right, then center.",
+            "expected_commands": [
+                "rotate_counter_clockwise 90 degrees",
+                "rotate_clockwise 180 degrees",
+                "rotate_counter_clockwise 90 degrees"
+            ]
+        },
+        {
+            "prompt": "先向左看，再向右看，最后回到前面",
+            "expected_commands": [
+                "rotate_counter_clockwise 90 degrees",
+                "rotate_clockwise 180 degrees",
+                "rotate_counter_clockwise 90 degrees"
+            ]
+        }
+    ]
+}

@@ -6,8 +6,7 @@ import ollama
 import json
 import re
 import os
-from llm_utils import get_system_prompts, parse_llm_response, bcolors
-
+from utils.llm_utils import get_system_prompts, parse_llm_response, bcolors
 
 class LLMOfflineTester:
     def __init__(self):
@@ -16,96 +15,73 @@ class LLMOfflineTester:
         self.ollama_model = rospy.get_param("~ollama_model", "llama3.1:8b")
         common_system_prompt_file = rospy.get_param("~common_system_prompt_file")
         tools_description_file = rospy.get_param("~tools_description_file")
-        self.inference_timeout = rospy.get_param("~inference_timeout")
+        self.inference_timeout = rospy.get_param("~inference_timeout", 150.0)
+        test_cases_file = rospy.get_param("~test_cases_file")
+
+        # --- 检查配置文件是否存在 ---
+        for f in [common_system_prompt_file, tools_description_file, test_cases_file]:
+            if not os.path.exists(f):
+                rospy.logerr(f"Configuration file not found at: {f}")
+                rospy.signal_shutdown("Missing configuration file.")
+                return
         
-        if not os.path.exists(common_system_prompt_file):
-            rospy.logerr(f"Tools config file not found at: {common_system_prompt_file}")
-            rospy.signal_shutdown("Common system prompt file not found.")
-            return
-        if not os.path.exists(tools_description_file):
-            rospy.logerr(f"Tools description file not found at: {tools_description_file}")
-            rospy.signal_shutdown("Tools config file not found.")
-            return
-        
+        # --- 加载和初始化 ---
         self.system_prompt = get_system_prompts(common_system_prompt_file, tools_description_file)
 
         try:
-            # Set a 150-second timeout for all requests to the Ollama client.
             self.ollama_client = ollama.Client(timeout=self.inference_timeout)
             self.ollama_client.list() 
         except Exception as e:
             rospy.logerr(f"Failed to connect to Ollama client. Please ensure Ollama is running. Error: {e}")
+            rospy.signal_shutdown("Ollama connection failed.")
             return
             
-        self.test_cases = self._define_test_cases()
+        self.test_cases = self._load_test_cases_from_file(test_cases_file)
+        if not self.test_cases:
+            rospy.signal_shutdown("Failed to load test cases.")
+            return
+
         rospy.loginfo(f"LLM Offline Tester is ready. Model: {self.ollama_model}")
 
-        # static
         self.g_total_duration = 0.0
         self.g_total_tokens = 0
 
-    def _define_test_cases(self):
-        """
-        Defines a list of 20 test cases with prompts and their expected command outputs.
-        """
-        return [
-            # 1. Basic Single Actions
-            {"prompt": "Take off.", "expected_commands": ["takeoff"]},
-            {"prompt": "Land the drone.", "expected_commands": ["land"]},
-            
-            # 2. Basic Single Actions
-            {"prompt": "向前飞1米", "expected_commands": ["move_forward 1m"]},
-            {"prompt": "向后飞50厘米", "expected_commands": ["move_backward 0.5m"]},
-            
-            # 3. Simple Sequences
-            {"prompt": "Take off, go up 1 meter, then land.", "expected_commands": ["takeoff", "move_up 1m", "land"]},
-            {"prompt": "先起飞, 然后向左平移半米, 最后降落", "expected_commands": ["takeoff", "move_left 0.5m", "land"]},
-            
-            # 4. Rotations
-            {"prompt": "Turn right 90 degrees.", "expected_commands": ["rotate_clockwise 90 degrees"]},
-            {"prompt": "向左旋转180度", "expected_commands": ["rotate_counter_clockwise 180 degrees"]},
-            
-            # 5. More Complex Sequences
-            {"prompt": "Fly a triangle with 1.5m sides.", "expected_commands": ["move_forward 1.5m", "rotate_clockwise 120 degrees", "move_forward 1.5m", "rotate_clockwise 120 degrees", "move_forward 1.5m"]},
-            {"prompt": "飞一个1米边长的等边三角形", "expected_commands": ["move_forward 1m", "rotate_clockwise 120 degrees", "move_forward 1m", "rotate_clockwise 120 degrees", "move_forward 1m"]},
-            
-            # 6. Up/Down Sequences
-            {"prompt": "Fly up 2 meters, then come down 1 meter.", "expected_commands": ["move_up 2m", "move_down 1m"]},
-            {"prompt": "做一个“上上下下”的动作，每次半米", "expected_commands": ["move_up 0.5m", "move_down 0.5m", "move_up 0.5m", "move_down 0.5m"]},
-            
-            # 7. Rectangular Path
-            {"prompt": "Fly a rectangle 2m long and 1m wide.", "expected_commands": ["move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m", "rotate_clockwise 90 degrees", "move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m"]},
-            {"prompt": "飞一个长2米，宽1米的长方形", "expected_commands": ["move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m", "rotate_clockwise 90 degrees", "move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m"]},
-            
-            # 8. Back and Forth
-            {"prompt": "Go forward 3 meters, then return to start.", "expected_commands": ["move_forward 3m", "move_backward 3m"]},
-            {"prompt": "向前飞3米，然后飞回来", "expected_commands": ["move_forward 3m", "move_backward 3m"]},
-            
-            # 9. Staircase Pattern
-            {"prompt": "Fly a staircase pattern: go up 50cm, forward 50cm, three times.", "expected_commands": ["move_up 0.5m", "move_forward 0.5m", "move_up 0.5m", "move_forward 0.5m", "move_up 0.5m", "move_forward 0.5m"]},
-            {"prompt": "飞一个三级的楼梯，每级高半米，长半米", "expected_commands": ["move_up 0.5m", "move_forward 0.5m", "move_up 0.5m", "move_forward 0.5m", "move_up 0.5m", "move_forward 0.5m"]},
-
-            # 10. Rotational Sequence
-            {"prompt": "Look left, then right, then center.", "expected_commands": ["rotate_counter_clockwise 90 degrees", "rotate_clockwise 180 degrees", "rotate_counter_clockwise 90 degrees"]},
-            {"prompt": "先向左看，再向右看，最后回到前面", "expected_commands": ["rotate_counter_clockwise 90 degrees", "rotate_clockwise 180 degrees", "rotate_counter_clockwise 90 degrees"]}
-        ]
-
+    def _load_test_cases_from_file(self, file_path):
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                # 假设JSON文件的顶层有一个名为 "test_cases" 的键
+                rospy.loginfo(f"Successfully loaded {len(data['test_cases'])} test cases from {file_path}")
+                return data['test_cases']
+        except json.JSONDecodeError as e:
+            rospy.logerr(f"Error decoding JSON from {file_path}: {e}")
+            return None
+        except KeyError:
+            rospy.logerr(f"JSON file {file_path} is missing the top-level 'test_cases' key.")
+            return None
+        except Exception as e:
+            rospy.logerr(f"An unexpected error occurred while reading {file_path}: {e}")
+            return None
 
     def run_tests(self):
         """
-        Executes all defined test cases against the LLM and reports the results,
-        including token speed statistics for each test.
+        对LLM执行所有已定义的测试用例，并报告结果。
+        第一个测试用例将作为“预热”运行，不计入最终的性能统计。
         """
         if not hasattr(self, 'ollama_client'):
             rospy.logerr("Ollama client not initialized. Aborting tests.")
             return
 
         total_tests = len(self.test_cases)
+        if total_tests == 0:
+            rospy.logwarn("No test cases loaded. Aborting tests.")
+            return
+            
         passed_tests = 0
 
         rospy.loginfo(f"{bcolors.HEADER}--- Starting LLM Offline Test Suite ---{bcolors.ENDC}")
         rospy.loginfo(f"Model: {bcolors.BOLD}{self.ollama_model}{bcolors.ENDC}")
-        rospy.loginfo(f"Total test cases: {total_tests}\n")
+        rospy.loginfo(f"Total test cases: {total_tests} (First test is for warm-up and excluded from stats)\n")
 
         for i, case in enumerate(self.test_cases):
             rospy.loginfo(f"{bcolors.OKBLUE}--- Testing {i+1}/{total_tests} ---{bcolors.ENDC}")
@@ -127,14 +103,21 @@ class LLMOfflineTester:
                 prompt_tokens = response.get('prompt_eval_count', 0)
                 completion_tokens = response.get('eval_count', 0)
                 total_tokens = prompt_tokens + completion_tokens
-                self.g_total_tokens += total_tokens
 
                 duration_ns = response.get('total_duration', 1)
                 duration_s = duration_ns / 1_000_000_000
-                self.g_total_duration += duration_s
-
+                
                 tokens_per_second = total_tokens / duration_s if duration_s > 0 else 0
                 
+                # <--- 核心修改点 1: 增加条件判断 --->
+                # 只有在不是第一次运行(i > 0)时，才将数据计入全局统计
+                if i > 0:
+                    self.g_total_tokens += total_tokens
+                    self.g_total_duration += duration_s
+                else:
+                    # 对于第一次运行，打印一条提示信息
+                    rospy.loginfo(f"{bcolors.WARNING}Note: This first run is a warm-up and is excluded from final statistics.{bcolors.ENDC}")
+
                 stats_str = (f"Time: {duration_s:.2f} s | "
                              f"Speed: {tokens_per_second:.2f} tokens/s | "
                              f"Tokens: {total_tokens} (p: {prompt_tokens}, c: {completion_tokens})")
@@ -158,18 +141,37 @@ class LLMOfflineTester:
                 else:
                     rospy.logerr(f"An error occurred during test case {i+1}: {e}")
                 self.g_total_duration += self.inference_timeout
+                
             rospy.loginfo('-' * 50) 
 
         pass_rate = (passed_tests / total_tests) * 100
         color = bcolors.OKGREEN if pass_rate > 80 else bcolors.WARNING if pass_rate > 50 else bcolors.FAIL
         
+        # <--- 核心修改点 2: 调整最终统计的计算方式 --->
+        # 用于统计的测试数量是总数减一（如果总数大于1）
+        timed_tests_count = total_tests - 1 if total_tests > 1 else total_tests
+        
+        # 避免除以零的错误
+        if timed_tests_count > 0:
+            avg_duration = self.g_total_duration / timed_tests_count
+            avg_speed = self.g_total_tokens / self.g_total_duration if self.g_total_duration > 0 else 0
+        else:
+            avg_duration = 0
+            avg_speed = 0
+
         rospy.loginfo(f"{bcolors.HEADER}--- Test Suite Complete ---{bcolors.ENDC}")
         rospy.loginfo(f"Summary: ")
         rospy.loginfo(f"        Model                       : {self.ollama_model}")
         rospy.loginfo(f"        Pass Rate                   : {passed_tests}/{total_tests} tests passed ({color}{pass_rate:.2f}%{bcolors.ENDC})")
-        rospy.loginfo(f"        Total Cost                  : {self.g_total_duration:.3} seconds.")
-        rospy.loginfo(f"        Average Task Cost Time      : {self.g_total_duration / len(self.test_cases):.5} seconds.")
-        rospy.loginfo(f"        Average Token Generate Speed: {self.g_total_tokens / self.g_total_duration:.5} tokens/s")
+        
+        # 使用新的计算结果
+        if timed_tests_count > 0:
+            rospy.loginfo(f"        Total Cost (timed runs)     : {self.g_total_duration:.3f} seconds for {timed_tests_count} tests.")
+            rospy.loginfo(f"        Average Task Cost Time      : {avg_duration:.5f} seconds.")
+            rospy.loginfo(f"        Average Token Generate Speed: {avg_speed:.5f} tokens/s")
+        else:
+            rospy.loginfo("        Not enough tests to calculate performance statistics.")
+
 
 
 if __name__ == '__main__':

@@ -1,0 +1,9 @@
+# Goal
+string user_prompt
+---
+# Result
+bool success
+string final_message
+---
+# Feedback
+string status

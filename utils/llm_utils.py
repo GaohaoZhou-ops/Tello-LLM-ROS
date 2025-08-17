@@ -41,6 +41,12 @@ def load_txt_file(file_path:str):
 # 获取系统提示词：
 def get_system_prompts(prefix_file_path:str, tools_file:str):
     prefix_prompt = load_txt_file(prefix_file_path)
+
+    # 如果文件加载失败，将prefix_prompt视为空字符串而不是None
+    if prefix_prompt is None:
+        rospy.logerr(f"Failed to load prefix prompt from {prefix_file_path}. Continuing without it.")
+        prefix_prompt = ""
+    
     if get_file_type(tools_file) == 'txt':
         subfix_prompt = load_txt_file(tools_file)
     else:   # json
@@ -82,6 +88,7 @@ def parse_llm_response(plan_text, direct_parser_func=None):
     rospy.logwarn("System: Did not find a complete [START_COMMANDS]...[END_COMMANDS] block. Filtering all lines as fallback...")
     
     if not direct_parser_func:
+        rospy.logerr("System: direct paraser function is None")
         return []
 
     valid_commands = []

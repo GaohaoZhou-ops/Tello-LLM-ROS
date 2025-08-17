@@ -15,13 +15,14 @@
 |--|--|--|--|--|
 | codellama:7b | 3.8 GB | 35.00% | 1.58 | 433.53 |
 | codellama:13b | 4.7 GB | 55.00% | 3.44 | 191.98 |
-| codellama:34b | 19.0 GB |  |   |   |
+| codellama:34b | 19.0 GB | 50.00% | 7.84 | 84.70 |
 | llama3.1:8b | 4.9 GB | 60.00% | 2.04 | 257.65 |
 | llama3-groq-tool-use:8b | 4.7 GB | 50.00% | 2.03 | 261.59 |
 | qwen3:4b | 2.5 GB | 50.00% | 80.61 | 32.65 | 
 | qwen3:8b | 5.2 GB | 65.00% | 35.19 | 34.17 | 
 | qwen3:14b | 9.3 GB | 65.00% | 45.806 | 23.50 |
 | deepseek-coder-v2:16b | 8.9 GB | 60.00% | 1.56 | 376.31 | 
+| gpt-oss:20b | 13 GB | 70.00% | 24.05 | 33.81 |
 
 我们初步的实验得到了以下几点结论：
 
@@ -120,22 +121,24 @@ $ ollama stop codellama:7b
 
 ```bash
 ├── config
-│   ├── common_system_prompt-CN.txt
-│   ├── common_system_prompt-EN.txt
-│   ├── llm_tools.json
-│   ├── pure_text_tools_description-CN.txt
-│   └── pure_text_tools_description-EN.txt
+│   ├── prompts
+│   │   ├── common_system_prompt-CN.txt
+│   │   ├── common_system_prompt-EN.txt
+│   │   ├── pure_text_tools_description-CN.txt
+│   │   └── pure_text_tools_description-EN.txt
+│   ├── test_cases.json
+│   └── tools.json
 ```
 
 ## 添加工具
 
-如果你准备调用大模型，那么建议修改文件 `config/llm_tools.json` 来定义你的工具内容；
+如果你准备调用大模型，那么建议修改文件 `config/tools.json` 来定义你的工具内容；
 
-如果你准备调用小模型，那么建议修改纯文本文件 `config/pure_text_system_prompt-EN.txt` 来定义你的工具；
+如果你准备调用小模型，那么建议修改纯文本文件 `config/prompts/common_system_prompt-EN.txt` 来定义你的工具；
 
-但无论你准备用哪种方法添加工具，都需要自己实现；
+但无论你准备用哪种方法添加工具，都需要自己实现对应功能的脚本；
 
-## 测试模型性能
+## 离线模型测试
 
 在正式开始之前，我们强烈建议先用我们提供的测试节点测试一下模型在你当前设备上的性能与效率，如果成功率太低或者平均任务反应时长太长，那么建议更换模型。
 
@@ -144,76 +147,73 @@ $ unset all_proxy
 $ unset ALL_PROXY
 $ cd tello_ws
 $ source devel/setup.bash
-$ roslaunch tello_llm_ros test_llm.launch
+$ roslaunch tello_llm_ros offline_llm_test.launch
 ```
 
 ![LLM-test](./LLM-test.png)
 
-## 本地模型+仿真测试
+## 真机与仿真器运行
 
-在确认好使用的模型后，可以先以 mock 模式运行来测试当前模型的表现是否是你预期的效果，因为测试案例涵盖的样本太少。
-
-* 修改 `launch/tello.launch` 文件中 `use_sim` 字段为 `true` 启用仿真：
+可以通过修改文件 `launch/tello.launch` 中 `use_sim` 字段来决定使用真机还是仿真器：
 
 ```xml
-<arg name="use_sim" default="true" doc="Set to true to run in simulation mode"/>
+    <node name="$(arg drone_name)_driver" pkg="tello_llm_ros" type="tello_ros_driver.py" output="screen">
+        <param name="drone_name" value="$(arg drone_name)" />
+        <param name="use_sim" value="$(arg use_sim)" />
+        <param name="cmd_vel_timeout" value="$(arg cmd_vel_timeout)" />
+    </node>
 ```
 
-* 修改 `launch/llm_interface.launch` 文件中 `ollama_model` 字段为你想要运行的模型：
+修改文件 `launch/llm_bringup.launch` 中 `model_name` 以使用自己的模型：
 
 ```xml
-<arg name="ollama_model" default="qwen3:4b" doc="The Ollama model to use"/>
+    <node name="llm_service_node" pkg="tello_llm_ros" type="llm_service_node.py" output="screen">
+        <param name="model_name" value="codellama:7b"/>
+        <param name="model_type" value="ollama"/>
+        <param name="timeout" value="100.0"/>
+        <param name="common_system_prompt_file" value="$(arg common_prompt)"/>
+        <param name="tools_description_file" value="$(arg tools_prompt)"/>
+    </node>
 ```
 
-打开一个终端运行仿真器：
+在完成修改后用不同的终端分别启动以下节点：
+
 ```bash
-$ cd tello_ws
-$ source devel/setup.bash
+# Terminal 1
 $ roslaunch tello_llm_ros tello.launch
+
+# Terminal 2
+$ roslaunch tello_llm_ros control_node.launch
+
+# Terminal 3
+$ roslaunch tello_llm_ros llm_bringup.launch
 ```
 
-![rviz](./rviz.png)
+现在你可以通过一个简单客户端进入交互模式，输入 `quit` 退出：
 
-新开一个终端运行模型交互窗口，通过输入 `quit` 退出节点：
 ```bash
-$ unset all_proxy
-$ unset ALL_PROXY
-$ cd tello_ws
-$ source devel/setup.bash
-$ roslaunch tello_llm_ros llm_interface.launch
+$ rosrun tello_llm_ros simple_llm_client.py 
 ```
 
-![LLM-interface](./LLM-interface.png)
+![interface](./LLM-interface.png)
 
-## 本地模型+真机测试
+或者直接在终端向话题发布一个简单的命令：
 
-如果你的模型表现达到你的预期，接下来就可以使用真机进行测试：
-
-* 修改 `launch/tello.launch` 文件中 `use_sim` 字段为 `false` 启用真机：
-
-```xml
-<arg name="use_sim" default="true" doc="Set to true to run in simulation mode"/>
-```
-
-* 修改 `launch/llm_interface.launch` 文件中 `ollama_model` 字段为你想要运行的模型：
-
-```xml
-<arg name="ollama_model" default="qwen3:4b" doc="The Ollama model to use"/>
-```
-
-打开一个终端运行真机：
 ```bash
-$ cd tello_ws
-$ source devel/setup.bash
-$ roslaunch tello_llm_ros tello.launch
+$ rostopic pub /task_control_node/execute_task/goal tello_llm_ros/ExecuteTaskActionGoal "header:
+  seq: 0
+  stamp:
+    secs: 0
+    nsecs: 0
+  frame_id: ''
+goal_id:
+  stamp:
+    secs: 0
+    nsecs: 0
+  id: ''
+goal:
+  user_prompt: 'move back 3m'" 
 ```
 
-新开一个终端运行模型交互窗口：
-```bash
-$ unset all_proxy
-$ unset ALL_PROXY
-$ cd tello_ws
-$ source devel/setup.bash
-$ roslaunch tello_llm_ros llm_interface.launch
-```
+![topic_control](./topic_control.png)
 

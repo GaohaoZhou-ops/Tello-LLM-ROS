@@ -1,35 +1,40 @@
 # Tello LLM ROS
 
-This repository implements LLM control of the Tello drone within the ROS framework, accepting natural language commands as input. The current version only supports calling it through the local Ollama model. We are currently testing calling it using online models and agent systems, and will update the repository as soon as testing is complete.
+This repository implements controlling the Tello drone using LLM within the ROS framework, accepting natural language commands as input. The current version only supports calling it through the local Ollama model. We are currently testing calling it using online models and agent systems, and will update the repository as soon as testing is complete.
 
 # Benchmarks
 
-## Local Model Test
-Currently, we have only conducted experiments on the Nvidia Jetson Orin 64GB DK hardware. We will explore testing on a wider range of hardware devices in the future. The system and library information for the experimental environment are as follows:
+## Local Model Testing
+Currently, we have only conducted experiments on the Nvidia Jetson Orin 64GB DK. We will explore testing on a wider range of hardware devices in the future. The system and library information for the experimental environment are as follows:
 
 ![jetson_release](./jetson_release.png)
 
 Based on this, we evaluated the performance of several different local models. For test samples, see the `_define_test_cases` function in the `src/tello_llm_ros/scripts/test_llm_offline.py` script:
 
-|Model| Size | Accuracy|Average Response Time s|Average Generation Rate tokens/s|
+|Model|Size|Accuracy|Average Response Time s|Average Generation Rate tokens/s|
 |--|--|--|--|--|
 | codellama:7b | 3.8 GB | 35.00% | 1.58 | 433.53 |
 | codellama:13b | 4.7 GB | 55.00% | 3.44 | 191.98 |
+| codellama:34b | 19.0 GB | 50.00% | 7.84 | 84.70 |
 | llama3.1:8b | 4.9 GB | 60.00% | 2.04 | 257.65 |
 | llama3-groq-tool-use:8b | 4.7 GB | 50.00% | 2.03 | 261.59 |
-| qwen3:4b | 2.5 GB | 50.00% | 80.61 | 32.65 | 
-| qwen3:8b | 5.2 GB | 65.00% | 35.19 | 34.17 | 
+| qwen3:4b | 2.5 GB | 50.00% | 80.61 | 32.65 |
+| qwen3:8b | 5.2 GB | 65.00% | 35.19 | 34.17 |
 | qwen3:14b | 9.3 GB | 65.00% | 45.806 | 23.50 |
-| deepseek-coder-v2:16b | 8.9 GB | 60.00% | 1.56 | 376.31 | 
+| deepseek-coder-v2:16b | 8.9 GB | 60.00% | 1.56 | 376.31 |
+| gpt-oss:20b | 13 GB | 70.00% | 24.05 | 33.81 |
 
 Our preliminary experiments yielded the following conclusions:
 
 1. Most local model test cases failed due to the addition of the `takeoff` and `land` commands.
-2. For local models with small parameter counts, using plain text system prompts has a higher success rate than using JSON tool descriptions.
-3. Local models tend to split a single action into multiple commands, which may be related to the system prompts. For example, for "rotate 180 degrees," the model would output the command "rotate 90 degrees" twice.
-4. The response speed of the Code-type local model for a single task is much faster than that of the general-purpose model.
 
-To minimize overall system response time, we implemented direct calls for some explicit commands, such as `takeoff`. These commands are not fed into the model for inference. You can also add more direct commands by modifying the `direct_triggers` field in the `config/llm_tools.json` file as follows. The `takeoff`, `take off`, and `launch` commands can all be directly executed:
+2. For local models with small parameter counts, using plain text system prompts yields higher success rates than using JSON tool descriptions.
+
+3. Local models tend to split a single action into multiple commands, which may be related to the system prompts. For example, for "rotate 180 degrees," the model will output the command "rotate 90 degrees" twice.
+
+4. Code-type local models respond much faster on a single task than general-purpose models.
+
+To minimize overall system response time, we implement direct calls for some explicit commands, such as `takeoff`. These commands are not fed into the model for inference. You can also add more direct execution commands by modifying the `direct_triggers` field in the `config/llm_tools.json` file as follows. The `takeoff`, `take off`, and `launch` commands can all be directly executed:
 
 ```json
 {
@@ -46,7 +51,7 @@ To minimize overall system response time, we implemented direct calls for some e
 },
 ```
 
-## Online Mode Test
+## Online Model Testing
 
 Comming Soon...
 
@@ -78,7 +83,7 @@ $ cd tello_ws/src
 $ git clone https://github.com/GaohaoZhou-ops/Tello-LLM-ROS.git
 ```
 
-After pulling the code, you can compile it:
+Once the pull is complete, you can compile:
 
 ```bash
 $ cd tello_ws
@@ -96,7 +101,7 @@ $ ollama pull qwen3:8b
 
 ----
 # How to Use
-We provide multiple usage modes, including real-device and model testing, standalone model testing, and model and mock testing.
+We provide multiple usage modes, including testing on a real device and the model, testing the model independently, and testing the model and a mock.
 
 If you want to control the drone with an XBox controller, you can use our other open-source repository:
 
@@ -115,137 +120,102 @@ $ ollama stop codellama:7b
 
 ## Modifying System Prompts
 
-As we all know, system prompts significantly impact model performance. While the system prompts in our project have been refined, they may not be suitable for your task. If you find that your model's performance is unsatisfactory, you can modify the system prompts to constrain them. We break system prompts into two parts: `Common System Prompts` and `Tool Descriptions`. These files are saved in the `config` directory. The final system prompt is a concatenation of the two parts:
+As we all know, system prompts significantly impact model performance. Although the system prompts in the project have been carefully polished, they may not be suitable for your task. If you find that the model's performance is unsatisfactory, you can constrain the model by modifying the system prompt words. We split the system prompt into two parts: `Common System Prompt` and `Tool Description`. These files are saved in the `config` directory. The final system prompt is a concatenation of the two parts:
 
 ```bash
 ├── config
-│ ├── common_system_prompt-CN.txt
-│ ├── common_system_prompt-EN.txt
-│ ├── llm_tools.json
-│ ├── pure_text_tools_description-CN.txt
-│ └── pure_text_tools_description-EN.txt
+│ ├── prompts
+│ │ ├── common_system_prompt-CN.txt
+│ │ ├── common_system_prompt-EN.txt
+│ │ ├── pure_text_tools_description-CN.txt
+│ │ └── pure_text_tools_description-EN.txt
+│ ├── test_cases.json
+│ └── tools.json
 ```
 
 ## Adding Tools
 
-If you plan to use a large model, we recommend modifying the `config/llm_tools.json` file to define your tool content.
+If you plan to use a large model, it is recommended to modify the `config/tools.json` file to define your tool content.
 
-If you plan to use a small model, we recommend modifying the `config/pure_text_system_prompt-EN.txt` file to define your tool content.
+If you plan to use a small model, it is recommended to modify the plain text file. Define your tools in `config/prompts/common_system_prompt-EN.txt`;
 
-Regardless of which method you choose to add tools, you must implement them yourself.
+Regardless of which method you choose to add tools, you'll need to implement your own scripts for the corresponding functionality.
 
-## Testing Model Performance
+## Offline Model Testing
 
-Before officially starting, we strongly recommend using the provided test nodes to test the model's performance and efficiency on your current device. If the success rate is too low or the average task response time is too long, we recommend replacing the model.
+Before officially starting, we strongly recommend testing the model's performance and efficiency on your current device using the provided test nodes. If the success rate is too low or the average task response time is too long, we recommend replacing the model.
 
 ```bash
 $ unset all_proxy
 $ unset ALL_PROXY
 $ cd tello_ws
 $ source devel/setup.bash
-$ roslaunch tello_llm_ros test_llm.launch
+$ roslaunch tello_llm_ros offline_llm_test.launch
 ```
 
 ![LLM-test](./LLM-test.png)
 
-## Local Model + Simulation Test
+## Running on a real device or simulator
 
-After confirming the model to use, you can first run it in mock mode to test whether the current model performs as expected, as the test case covers too few samples.
-
-* Modify the `use_sim` field in the `launch/tello.launch` file to `true` to enable simulation:
+You can change the `use_sim` field in `launch/tello.launch` to use a real device or simulator:
 
 ```xml
-<arg name="use_sim" default="true" doc="Set to true to run in simulation mode"/>
+<node name="$(arg drone_name)_driver" pkg="tello_llm_ros" type="tello_ros_driver.py" output="screen">
+<param name="drone_name" value="$(arg drone_name)" />
+<param name="use_sim" value="$(arg use_sim)" />
+<param name="cmd_vel_timeout" value="$(arg cmd_vel_timeout)"/>
+</node>
 ```
 
-* Modify the `ollama_model` field in the `launch/llm_interface.launch` file to the model you want to run:
+Modify `model_name` in the `launch/llm_bringup.launch` file to use your own model:
 
 ```xml
-<arg name="ollama_model" default="qwen3:4b" doc="The Ollama model to use"/>
+<node name="llm_service_node" pkg="tello_llm_ros" type="llm_service_node.py" output="screen">
+<param name="model_name" value="codellama:7b"/>
+<param name="model_type" value="ollama"/>
+<param name="timeout" value="100.0"/>
+<param name="common_system_prompt_file" value="$(arg common_prompt)"/>
+<param name="tools_description_file" value="$(arg tools_prompt)"/>
+</node>
 ```
 
-Open a terminal and run the simulator:
+After completing the modification, launch the following nodes in different terminals:
+
 ```bash
-$ cd tello_ws
-$ source devel/setup.bash
+# Terminal 1
 $ roslaunch tello_llm_ros tello.launch
+
+# Terminal 2
+$ roslaunch tello_llm_ros control_node.launch
+
+# Terminal 3
+$ roslaunch tello_llm_ros llm_bringup.launch
 ```
 
-![rviz](./rviz.png)
+You can now enter interactive mode using a simple client and exit by typing `quit`:
 
-Open a new terminal and run the model interaction window. Exit the node by typing `quit`:
 ```bash
-$ unset all_proxy
-$ unset ALL_PROXY
-$ cd tello_ws
-$ source devel/setup.bash
-$ roslaunch tello_llm_ros llm_interface.launch
+$ rosrun tello_llm_ros simple_llm_client.py
 ```
 
-![LLM-interface](./LLM-interface.png)
+![interface](./LLM-interface.png)
 
-## Local Model + Real Device Testing
+Or, you can publish a simple command to the topic directly in the terminal:
 
-If your model performs as expected, you can now test it on a real device:
-
-* Change the `use_sim` field in the `launch/tello.launch` file to `false` Enable the real machine:
-
-```xml
-<arg name="use_sim" default="true" doc="Set to true to run in simulation mode"/>
-```
-
-* Modify the `ollama_model` field in the `launch/llm_interface.launch` file to the model you want to run:
-
-```xml
-<arg name="ollama_model" default="qwen3:4b" doc="The Ollama model to use"/>
-```
-
-Open a terminal and run the real machine:
 ```bash
-$ cd tello_ws
-$ source devel/setup.bash
-$ roslaunch tello_llm_ros tello.launch
+$ rostopic pub /task_control_node/execute_task/goal tello_llm_ros/ExecuteTaskActionGoal "header:
+seq: 0
+stamp:
+secs: 0
+nsecs: 0
+frame_id: ''
+goal_id:
+stamp: 
+secs: 0 
+nsecs: 0 
+id: ''
+goal: 
+user_prompt: 'move back 3m'"
 ```
 
-Open a new terminal to run the model interaction window and exit the node by typing `quit`:
-```bash
-$ unset all_proxy
-$ unset ALL_PROXY
-$ cd tello_ws
-$ source devel/setup.bash
-$ roslaunch tello_llm_ros llm_interface.launch
-```
-
-![LLM-interface](./LLM-interface.png)
-
-## Local Model + Real Device Testing
-
-If your model performs as expected, you can now test it on a real device:
-
-* Modify the `use_sim` field in the `launch/tello.launch` file to `false` to enable the real device:
-
-```xml
-<arg name="use_sim" default="true" doc="Set to true to run in simulation mode"/>
-```
-
-* Modify the `ollama_model` field in the `launch/llm_interface.launch` file The field contains the model you want to run:
-
-```xml
-<arg name="ollama_model" default="qwen3:4b" doc="The Ollama model to use"/>
-```
-
-Open a terminal and run the real machine:
-```bash
-$ cd tello_ws
-$ source devel/setup.bash
-$ roslaunch tello_llm_ros tello.launch
-```
-
-Open a new terminal and run the model interactive window:
-```bash
-$ unset all_proxy
-$ unset ALL_PROXY
-$ cd tello_ws
-$ source devel/setup.bash
-$ roslaunch tello_llm_ros llm_interface.launch
-```
+![topic_control](./topic_control.png)

@@ -1,0 +1,7 @@
+# Request
+string user_prompt
+---
+# Response
+bool success
+string plan_text
+string error_message

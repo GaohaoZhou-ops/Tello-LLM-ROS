@@ -1,0 +1,19 @@
+<launch>
+    <!-- promots -->
+    <arg name="common_prompt" default="$(find tello_llm_ros)/config/prompts/common_system_prompt-EN.txt"/>
+    <arg name="tools_prompt" default="$(find tello_llm_ros)/config/prompts/pure_text_tools_description-EN.txt"/>
+    
+    <!-- test cases -->
+    <arg name="test_cases_file" default="$(find tello_llm_ros)/config/test_cases.json"/>
+
+    <!-- test node -->
+    <node name="llm_offline_tester" pkg="tello_llm_ros" type="test_llm_offline.py" output="screen">
+        <param name="ollama_model" value="codellama:7b"/>
+        <param name="inference_timeout" value="100.0"/>
+
+        <param name="common_system_prompt_file" value="$(arg common_prompt)"/>
+        <param name="tools_description_file" value="$(arg tools_prompt)"/>
+        <param name="test_cases_file" value="$(arg test_cases_file)"/>
+    </node>
+
+</launch>

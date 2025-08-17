@@ -1,0 +1,11 @@
+<launch>
+    <arg name="drone_name" default="tello"/>
+    <arg name="tools_config_path" default="$(find tello_llm_ros)/config/tools.json"/>
+
+    <!-- control node -->
+    <node name="task_control_node" pkg="tello_llm_ros" type="task_control_node.py" output="screen">
+        <param name="drone_name" value="$(arg drone_name)"/>
+        <param name="tools_config_path" value="$(arg tools_config_path)"/>
+    </node>
+
+</launch>
