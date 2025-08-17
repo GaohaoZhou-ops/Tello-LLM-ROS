@@ -9,13 +9,13 @@
     <!-- <arg name="ollama_model" default="llama3.1:8b" doc="The Ollama model to use"/> -->
 
     <!-- DeepSeek -->
-    <!-- <arg name="ollama_model" default="deepseek-r1:1.5b" doc="The Ollama model to use"/> -->
-    <!-- <arg name="ollama_model" default="deepseek-r1:8b" doc="The Ollama model to use"/> -->
+    <arg name="ollama_model" default="deepseek-r1:8b" doc="The Ollama model to use"/>
+    <!-- <arg name="ollama_model" default="deepseek-r1:14b" doc="The Ollama model to use"/> -->
 
     <!-- Qwen3 -->
     <!-- <arg name="ollama_model" default="qwen3:4b" doc="The Ollama model to use"/> -->
     <!-- <arg name="ollama_model" default="qwen3:8b" doc="The Ollama model to use"/> -->
-    <arg name="ollama_model" default="qwen3:14b" doc="The Ollama model to use"/>
+    <!-- <arg name="ollama_model" default="qwen3:14b" doc="The Ollama model to use"/> -->
 
     <!-- System prompt -->
     <!-- <arg name="tools_config_path" default="$(find tello_llm_ros)/config/llm_tools.json" /> -->

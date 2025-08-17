@@ -8,17 +8,16 @@
 
 在此基础上我们对多个不同的本地模型性能与表现进行了评估，测试样本可以查看脚本 `src/tello_llm_ros/scripts/test_llm_offline.py` 中 `_define_test_cases` 函数的内容：
 
-|Model|准确率|平均响应时长 s|平均生成速度 tokens/s|
-|--|--|--|--|
-|Qwen3:4b| 55.00% | 89.25 | 36.68 |
-|Qwen3:8b| 60.00% | 52.245 | 40.684 |
-|Qwen3:14b|  | | |
-|CodeLlama:7b|30.00%|3.265|441.44|
-|CodeLlama:13b||||
-|Llama3.1:8b| | | |
-|DeepSeek-r1:1.7b| | | |
-|DeepSeek-r1:8b| | | |
-
+|Model|大小|准确率|平均响应时长 s|平均生成速度 tokens/s|
+|--|--|--|--|--|
+|Qwen3:4b| 2.5 GB | | | | 
+|Qwen3:8b| 5.2 GB | | | | 
+|Qwen3:14b| 9.3 GB | | | |
+|CodeLlama:7b| 40.00% | 2.15 | 313.91 |
+|CodeLlama:13b| 45.00% | 5.43 | 130.98 |
+|Llama3.1:8b| 4.9 GB | 55.00% | 2.29 | 243.00 |
+|DeepSeek-r1:8b| 5.2 GB | | | |
+|DeepSeek-r1:14b| 9.0 GB | | | |
 
 我们初步的实验得到了以下几点结论：
 

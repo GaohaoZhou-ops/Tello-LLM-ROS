@@ -16,7 +16,6 @@ Based on this, we evaluated the performance of several different local models. F
 |CodeLlama:7b|30.00%|3.265|441.44|
 |CodeLlama:13b||||
 |Llama3.1:8b| | | |
-|DeepSeek-r1:1.7b| | | |
 |DeepSeek-r1:8b| | | |
 
 Our preliminary experiments yielded the following conclusions:

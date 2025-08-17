@@ -75,16 +75,16 @@ class LLMOfflineTester:
             {"prompt": "向左旋转180度", "expected_commands": ["rotate_counter_clockwise 180 degrees"]},
             
             # 4. More Complex Sequences
-            {"prompt": "Fly a triangle with 1.5m sides.", "expected_commands": ["move_forward 1.5m", "rotate_clockwise 120 degrees", "move_forward 1.5m", "rotate_clockwise 120 degrees", "move_forward 1.5m", "rotate_clockwise 120 degrees"]},
-            {"prompt": "飞一个1米边长的等边三角形", "expected_commands": ["move_forward 1m", "rotate_clockwise 120 degrees", "move_forward 1m", "rotate_clockwise 120 degrees", "move_forward 1m", "rotate_clockwise 120 degrees"]},
+            {"prompt": "Fly a triangle with 1.5m sides.", "expected_commands": ["move_forward 1.5m", "rotate_clockwise 120 degrees", "move_forward 1.5m", "rotate_clockwise 120 degrees", "move_forward 1.5m"]},
+            {"prompt": "飞一个1米边长的等边三角形", "expected_commands": ["move_forward 1m", "rotate_clockwise 120 degrees", "move_forward 1m", "rotate_clockwise 120 degrees", "move_forward 1m"]},
             
             # 5. Up/Down Sequences
             {"prompt": "Fly up 2 meters, then come down 1 meter.", "expected_commands": ["move_up 2m", "move_down 1m"]},
             {"prompt": "做一个“上上下下”的动作，每次半米", "expected_commands": ["move_up 0.5m", "move_down 0.5m", "move_up 0.5m", "move_down 0.5m"]},
             
             # 6. Rectangular Path
-            {"prompt": "Fly a rectangle 2m long and 1m wide.", "expected_commands": ["move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m", "rotate_clockwise 90 degrees", "move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m", "rotate_clockwise 90 degrees"]},
-            {"prompt": "飞一个长2米，宽1米的长方形", "expected_commands": ["move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m", "rotate_clockwise 90 degrees", "move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m", "rotate_clockwise 90 degrees"]},
+            {"prompt": "Fly a rectangle 2m long and 1m wide.", "expected_commands": ["move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m", "rotate_clockwise 90 degrees", "move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m"]},
+            {"prompt": "飞一个长2米，宽1米的长方形", "expected_commands": ["move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m", "rotate_clockwise 90 degrees", "move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m"]},
             
             # 7. Back and Forth
             {"prompt": "Go forward 3 meters, then return to start.", "expected_commands": ["move_forward 3m", "move_backward 3m"]},

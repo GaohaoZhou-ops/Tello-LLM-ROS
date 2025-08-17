@@ -167,23 +167,28 @@ move_down 1m
 
 def parse_llm_response(plan_text, direct_parser_func=None):
     """
-    Parses the full text response from the LLM to extract a clean list of valid commands.
+    Parses the full text response from the LLM to extract a clean list of valid commands
+    from the very last command block.
     
     :param plan_text: The raw string output from the LLM.
     :param direct_parser_func: A reference to a node's `parse_direct_command` function, used for fallback.
     :return: A list of strings, where each string is a valid command.
     """
-    # Use re.findall to get all occurrences and take the last one.
-    # 只提取正则表达式中最后一对
-    matches = re.findall(r"\[START_COMMANDS\](.*?)\[END_COMMANDS\]", plan_text, re.DOTALL)
+    # This regex uses a greedy '.*' at the beginning to match everything up to the
+    # last occurrence of '[START_COMMANDS]', ensuring we only parse the final block.
+    # 我們只期望找到一個匹配項，因此使用 re.search
+    regex = r".*\[START_COMMANDS\](.*?)\[END_COMMANDS\]"
+    match = re.search(regex, plan_text, re.DOTALL)
     
-    if matches:
-        command_block = matches[-1].strip()
-        rospy.loginfo("System: Found [START_COMMANDS] block. Parsing commands...")
+    if match:
+        # match.group(0) 是整個匹配的文本 (從開頭到 [END_COMMANDS])
+        # match.group(1) 是我們捕獲的第一個分組，即 () 內的內容
+        command_block = match.group(1).strip()
+        rospy.loginfo("System: Found the last [START_COMMANDS] block. Parsing commands...")
         valid_commands = [cmd.strip() for cmd in command_block.split('\n') if cmd.strip()]
         return valid_commands
     
-    rospy.logwarn("System: Did not find [START_COMMANDS] block. Filtering all lines as fallback...")
+    rospy.logwarn("System: Did not find a complete [START_COMMANDS]...[END_COMMANDS] block. Filtering all lines as fallback...")
     
     if not direct_parser_func:
         return []
