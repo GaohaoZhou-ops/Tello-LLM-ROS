@@ -1,0 +1,19 @@
+<launch>
+    <arg name="model_type"      default="deepseek"/>
+    <arg name="model_name"      default="deepseek-chat"/>
+    <arg name="api_key"         default="sk-79df7ada672542ddbce5ce6a64cbe3a1" /> 
+    
+    <arg name="common_prompt"   default="$(find tello_llm_ros)/config/prompts/common_system_prompt-EN.txt"/>
+    <arg name="tools_prompt"    default="$(find tello_llm_ros)/config/prompts/pure_text_tools_description-EN.txt"/>
+
+    <node name="llm_service_node" pkg="tello_llm_ros" type="llm_service_node.py" output="screen">
+        <param name="model_type" value="$(arg model_type)"/>
+        <param name="model_name" value="$(arg model_name)"/>
+        <param name="timeout"    value="100.0"/>
+
+        <param name="api_key"    value="$(arg api_key)" if="$(eval arg('model_type') == 'deepseek')"/>
+
+        <param name="common_system_prompt_file" value="$(arg common_prompt)"/>
+        <param name="tools_description_file" value="$(arg tools_prompt)"/>
+    </node>
+</launch>

@@ -4,4 +4,8 @@ string user_prompt
 # Response
 bool success
 string plan_text
+float64 duration_s
+int32 prompt_tokens
+int32 completion_tokens
+
 string error_message

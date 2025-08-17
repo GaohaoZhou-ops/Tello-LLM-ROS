@@ -1,0 +1,11 @@
+<launch>
+    <arg name="model_to_test" default="deepseek" doc="Model to test ('ollama' or 'deepseek')"/>
+
+    <include file="$(find tello_llm_ros)/launch/llm_service.launch">
+        <arg name="model_type" value="$(arg model_to_test)"/>
+        </include>
+
+    <node name="llm_service_tester" pkg="tello_llm_ros" type="llm_test.py" output="screen">
+        <param name="test_cases_file" value="$(find tello_llm_ros)/config/test_cases.json"/>
+    </node>
+</launch>

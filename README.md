@@ -22,6 +22,7 @@ The hardware and testing facilities for this project were provided by the `Insti
 # News & Future Work
 
 ## News
+* 2025-08-17: Add DeepSeek online client call.
 * 2025-08-17: Huge reconstruction, stripped LLM nodes and executor nodes;
 * 2025-08-17: Add local models benckmark;
 * 2025-08-17: Uniformed system prompt and tools descriptions;
@@ -30,5 +31,5 @@ The hardware and testing facilities for this project were provided by the `Insti
 
 ## TODO
 
-* Target1: Add online LLM;
+* Target1: Add more online LLM call;
 * Target2: Add agent system;

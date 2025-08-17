@@ -1,8 +1,175 @@
 # Tello LLM ROS
 
-这个仓库实现了在 ROS 框架下使用 LLM 对 Tello 无人机进行控制，并以自然语言指令作为输入。当前的版本仅支持通过本地 Ollama 模型的调用，我们正在测试使用在线模型和 Agent 系统的调用方式，一旦完成测试我们将在第一时间更新仓库。
+这个仓库实现了在 ROS 框架下使用 LLM 对 Tello 无人机进行控制，以自然语言指令作为输入结合提示词和 tools 定义让模型输出无人机控制指令。目前支持多种组合调试方式：
 
-# Benchmarks
+|Model|Drone|Support|
+|---|---|---|
+|Ollama Local|Simulate|✅|
+| |Real|✅|
+|DeepSeek Online|Simulate|✅||
+| |Real|✅||
+|ChatGPT Online|-|Comming Soon...|
+
+同时，我们还对部分本地/在线模型进行了测试，你可以查看这篇文档的 `Benchmarks` 章节了解更多详情。
+
+如果你想要通过 XBox 手柄对无人机实现控制，可以参考我们另一个开源项目：[XBox Controller Reader](https://github.com/GaohaoZhou-ops/XboxControllerReader)，该项目的 ROS 版本即将推出。
+
+
+# 🎉 News!
+
+### 2025年08月17日 星期日
+
+我们大范围重构了这个工程，现在支持本地 Ollama 和在线 DeepSeek API 两种调用方式，更多常用模型的客户端正在开发中，敬请期待。
+
+### 2025年08月15日 星期六
+
+统一了模型测试和应用时的提示词生成；
+
+-----
+## 1. 安装与部署 🪤
+
+无论你是否使用本地模型都需要对基础环境进行配置与部署，按照下面的流程操作即可完成这部分内容。
+
+
+### 1.1 安装基础依赖库
+在运行之前你可能需要安装包括但不限于以下依赖库：
+
+```bash
+$ conda install libffi==3.3
+```
+
+### 1.2 创建conda环境
+
+```bash
+$ conda create -n tello python=3.8
+$ conda activate tello
+$ pip install -r requirements.txt
+```
+
+### 1.3 源码编译
+
+进入到你的工程中拉取源码，这里假设为 `tello_ws`：
+
+```bash
+$ cd tello_ws/src
+$ git clone https://github.com/GaohaoZhou-ops/Tello-LLM-ROS.git
+```
+
+拉取完成后即可执行编译：
+
+```bash
+$ cd tello_ws
+$ catkin_make
+```
+
+-----
+## 2. 如何使用 💻
+
+工程支持本地与在线模型调用方式，这一章将介绍如何使用整个工程。
+
+### 2.1 配置提示词语工具 🔔
+无论你选择本地还是在线模型调用，我们都建议你认真查看提示词内容并在必要时修改提示词以更好地适配你当前的任务。工程给语言模型提供的提示词文件保存在 `config` 目录下，其中 `prompts` 目录中提供了多个语言版本的系统提示词以及纯语言版本的提示词文件，这样设计出于以下几点考量：
+
+1. 测试发现对于 <font color=blue>**本地模型**</font> 而言，使用纯文本描述 tools 会显著提升正确率，这可能是由于解析 json 文件会产生额外的 tokens，这对于小参数模型的长程记忆而言不友好；
+2. 我们也建议使用纯文本提示词的方式调用 <font color=green>**在线模型**</font>，因为这样可以降低 API tokens 的消耗；
+
+
+```bash
+.
+├── prompts
+│   ├── common_system_prompt-CN.txt           # 通用系统提示词
+│   ├── common_system_prompt-EN.txt
+│   ├── pure_text_tools_description-CN.txt    # tools 描述文本
+│   └── pure_text_tools_description-EN.txt
+├── test_cases.json       # 模型测试案例
+└── tools.json            # tools 描述文件
+```
+
+你可以对这些文件进行修改，但需要注意的是，如果新增或修改了工具，那么需要对源码中对应工具的代码同步修改。
+
+### 2.2 模型性能测试 🌟
+
+我们强烈建议在使用真机与仿真之前先对你选择的模型进行一次简单的测试，`config/test_cases.json` 文件描述了测试案例，你可以根据自己的任务的需求增加或删除测试案例。
+
+文件 `launch/llm_service.launch` 中的几个参数决定了测试环境使用的模型：
+
+```xml
+  <arg name="model_type"      default="deepseek"/>
+  <arg name="model_name"      default="deepseek-chat"/>
+  <arg name="api_key"         default="Your online mode API Key" /> 
+```
+
+* `model_type`：模型类型，当前版本仅支持 `ollama` 和 `deepseek`；
+* `momodel_name`：模型名；
+* `api_key`：如果你使用的是本地 ollama 模型，那么这个参数可以为空；
+
+使用下面的命令运行模型性能测试：
+
+```bash
+$ cd tello_llm_ros
+$ source devel/setup.bash 
+$ roslaunch tello_llm_ros llm_test.launch
+```
+
+![llm_test](./images/llm_test.png)
+
+### 2.2 联合调试
+
+在确定好使用的模型后就可以进入联合调试阶段，工程提供了多种联调方式。
+
+#### 本地 Ollama 
+
+如果你打算使用本地模型，那么必须在运行之前拉取模型，我们建议使用 `llama3.1:8b 4.9GB` 这个模型，因为在我们的 benckmark 中，该模型平衡了正确率与输出速度，尽管与在线模型相比其正确率依旧不高。
+
+```bash
+$ ollama pull llama3.1:8b
+```
+
+#### 仿真控制
+
+如果你有其他特殊需求，比如需要调试服务器上的视觉 SLAM 是否可以正常运行，那么可以仅开启一个无人机仿真节点，尽管这个节点不会有任何图像生成，但会持续发布一张纯黑色的照片。
+
+下面脚本中 `use_sim` 参数决定了是否进行仿真，然后就可以通过话题控制无人机起飞、降落等动作：
+
+```bash
+$ roslaunch tello_llm_ros tello.launch 
+```
+
+![tello_sim](./images/tello_sim.png)
+
+#### 仿真 + LLM
+
+在进行真机实验之前建议先在仿真中完成LLM的调试，在启动下面几个脚本后就可以在终端向 LLM 发送指令：
+
+```bash
+# Terminal 1
+$ roslaunch tello_llm_ros tello.launch 
+
+# Terminal 2
+$ unset all_proxy
+$ unset ALL_PROXY
+$ roslaunch tello_llm_ros control_node.launch
+```
+
+在这些节点启动成功后可以新开一个终端启动 Simple Client，如果输入为 `quit` 则终止程序：
+
+```bash
+$ rosrun tello_llm_ros simple_llm_client.py
+```
+
+下面的例子调用了在线 `DeepSeek-Chat` 模型并分别给出了 2 条命令：
+
+* `go back to seen what is`;
+* `take a few steps forward to seen more clearly`;
+
+![interface_demo](./images/interface_demo.png)
+
+#### 真机 + LLM
+
+在仿真中调通了整个流程后就可以启动真机进行联调了，操作步骤与上面一直，但记得需要修改 `launch/tello.launch` 文件中的 `use_sim` 参数，将其改成 `false`。
+
+-----
+# Benchmarks 🏃
 
 ## 本地模型测试
 当前我们仅在 `Nvidia Jetson Orin 64GB DK` 这个硬件上开展了实验，未来我们会尝试在更丰富的硬件设备上进行测试。实验环境的系统与库信息如下：
@@ -48,174 +215,10 @@
     },
 ```
 
-## 在线模型测试
+## 在线模型测试 🧠
 
-Comming Soon...
+在线模型部分我们当前仅测试了 `DeepSeek-Chat` 这款模型，`ChatGPT` 和 `Gemini` 的测试正在开展。
 
-----
-# Step1. 安装依赖库
-
-## 1.1 安装基础依赖库
-在运行之前你可能需要安装包括但不限于以下依赖库：
-
-```bash
-$ conda install libffi==3.3
-```
-
-## 1.2 创建conda环境
-
-```bash
-$ conda create -n tello python=3.8
-$ conda activate tello
-$ pip install -r requirements.txt
-```
-
-----
-# Step2. 源码编译
-
-进入到你的工程中拉取源码，这里假设为 `tello_ws`：
-
-```bash
-$ cd tello_ws/src
-$ git clone https://github.com/GaohaoZhou-ops/Tello-LLM-ROS.git
-```
-
-拉取完成后即可执行编译：
-
-```bash
-$ cd tello_ws
-$ catkin_make
-```
-
-----
-# Step3. 拉取模型
-
-你可以通过下面的命令拉取 Ollama 开源的模型，这里以 `Qwen3:8b` 为例：
-
-```bash
-$ ollama pull qwen3:8b
-```
-
-----
-# 如何使用
-我们提供了多种使用模式，包括真机与模型联合测试、模型独立测试、模型与mock联合测试。
-
-如果你想要通过 XBox 手柄对无人机实现控制，可以使用我们另一个开源仓库：
-
-* XBox Controller Reader: [https://github.com/GaohaoZhou-ops/XboxControllerReader](https://github.com/GaohaoZhou-ops/XboxControllerReader)
-
-## 停止多余模型
-
-在调用模型前，为了避免资源被未关闭的模型抢占，你可以通过下面的命令来关停正在运行的模型：
-
-```bash
-$ ollama ps
-$ ollama stop codellama:7b
-```
-
-![ollama-stop](./images/ollama_stop.png)
-
-## 修改系统提示词
-
-众所周知，系统提示词对模型的性能表现影响很大，尽管工程中的系统提示此内容已经经过了多次打磨，但并不一定适合你的任务。如果你发现模型在表现上无法令人满意，那么可以通过修改系统提示词的方式给模型指令约束。我们将系统提示词拆解成两部分 `通用系统提示词` 和 `工具描述`，这些文件保存在 `config` 目录下，最终的系统提示词是两部分拼接得到：
-
-```bash
-├── config
-│   ├── prompts
-│   │   ├── common_system_prompt-CN.txt
-│   │   ├── common_system_prompt-EN.txt
-│   │   ├── pure_text_tools_description-CN.txt
-│   │   └── pure_text_tools_description-EN.txt
-│   ├── test_cases.json
-│   └── tools.json
-```
-
-## 添加工具
-
-如果你准备调用大模型，那么建议修改文件 `config/tools.json` 来定义你的工具内容；
-
-如果你准备调用小模型，那么建议修改纯文本文件 `config/prompts/common_system_prompt-EN.txt` 来定义你的工具；
-
-但无论你准备用哪种方法添加工具，都需要自己实现对应功能的脚本；
-
-## 离线模型测试
-
-在正式开始之前，我们强烈建议先用我们提供的测试节点测试一下模型在你当前设备上的性能与效率，如果成功率太低或者平均任务反应时长太长，那么建议更换模型。
-
-```bash
-$ unset all_proxy
-$ unset ALL_PROXY
-$ cd tello_ws
-$ source devel/setup.bash
-$ roslaunch tello_llm_ros offline_llm_test.launch
-```
-
-![LLM-test](./images/LLM-test.png)
-
-## 真机与仿真器运行
-
-可以通过修改文件 `launch/tello.launch` 中 `use_sim` 字段来决定使用真机还是仿真器：
-
-```xml
-    <node name="$(arg drone_name)_driver" pkg="tello_llm_ros" type="tello_ros_driver.py" output="screen">
-        <param name="drone_name" value="$(arg drone_name)" />
-        <param name="use_sim" value="$(arg use_sim)" />
-        <param name="cmd_vel_timeout" value="$(arg cmd_vel_timeout)" />
-    </node>
-```
-
-修改文件 `launch/llm_bringup.launch` 中 `model_name` 以使用自己的模型：
-
-```xml
-    <node name="llm_service_node" pkg="tello_llm_ros" type="llm_service_node.py" output="screen">
-        <param name="model_name" value="codellama:7b"/>
-        <param name="model_type" value="ollama"/>
-        <param name="timeout" value="100.0"/>
-        <param name="common_system_prompt_file" value="$(arg common_prompt)"/>
-        <param name="tools_description_file" value="$(arg tools_prompt)"/>
-    </node>
-```
-
-在完成修改后用不同的终端分别启动以下节点：
-
-```bash
-# Terminal 1
-$ roslaunch tello_llm_ros tello.launch
-
-# Terminal 2
-$ roslaunch tello_llm_ros control_node.launch
-
-# Terminal 3
-$ roslaunch tello_llm_ros llm_bringup.launch
-```
-
-![rviz](./images/rviz.png)
-
-现在你可以通过一个简单客户端进入交互模式，输入 `quit` 退出：
-
-```bash
-$ rosrun tello_llm_ros simple_llm_client.py 
-```
-
-![interface](./images/LLM-interface.png)
-
-或者直接在终端向话题发布一个简单的命令：
-
-```bash
-$ rostopic pub /task_control_node/execute_task/goal tello_llm_ros/ExecuteTaskActionGoal "header:
-  seq: 0
-  stamp:
-    secs: 0
-    nsecs: 0
-  frame_id: ''
-goal_id:
-  stamp:
-    secs: 0
-    nsecs: 0
-  id: ''
-goal:
-  user_prompt: 'move back 3m'" 
-```
-
-![topic_control](./images/topic_control.png)
-
+|Model|准确率|平均响应时长 s|
+|--|--|--|
+| DeepSeek-Chat | 80.00% ||

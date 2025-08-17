@@ -37,8 +37,13 @@ class OllamaClient(LLMBase):
                 messages=messages,
             )
             plan_text = response['message']['content']
-            return True, plan_text, ""
+            duration_ns = response.get('total_duration', 0)
+            duration_s = duration_ns / 1_000_000_000.0
+            prompt_tokens = response.get('prompt_eval_count', 0)
+            completion_tokens = response.get('eval_count', 0)
+            return True, plan_text, "", duration_s, prompt_tokens, completion_tokens
+
         except Exception as e:
             error_msg = f"Failed to query Ollama model '{self.model_name}': {e}"
             rospy.logerr(error_msg)
-            return False, "", error_msg
+            return False, "", str(e), 0.0, 0, 0
