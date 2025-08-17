@@ -1,12 +1,12 @@
 <launch>
 
     <!-- Ollama Model -->
-    <arg name="ollama_model" default="qwen3:8b" doc="The Ollama model to use"/>
+    <arg name="ollama_model" default="codellama:13b" doc="The Ollama model to use"/>
 
     <!-- System prompt -->
     <arg name="common_system_prompt_file" default="$(find tello_llm_ros)/config/common_system_prompt-EN.txt" />
     <arg name="tools_description_file" default="$(find tello_llm_ros)/config/pure_text_tools_description-EN.txt" />
-    <arg name="inference_timeout" default="150" />
+    <arg name="inference_timeout" default="120" />
 
     <node name="tello_llm_controller" pkg="tello_llm_ros" type="test_llm_offline.py" output="screen">
         <param name="ollama_model" value="$(arg ollama_model)" />

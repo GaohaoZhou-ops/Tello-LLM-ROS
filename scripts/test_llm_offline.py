@@ -31,7 +31,7 @@ class LLMOfflineTester:
 
         try:
             # Set a 150-second timeout for all requests to the Ollama client.
-            self.ollama_client = ollama.Client(timeout=inference_timeout)
+            self.ollama_client = ollama.Client(timeout=self.inference_timeout)
             self.ollama_client.list() 
         except Exception as e:
             rospy.logerr(f"Failed to connect to Ollama client. Please ensure Ollama is running. Error: {e}")
@@ -132,7 +132,7 @@ class LLMOfflineTester:
                 duration_ns = response.get('total_duration', 1)
                 duration_s = duration_ns / 1_000_000_000
                 self.g_total_duration += duration_s
-                
+
                 tokens_per_second = total_tokens / duration_s if duration_s > 0 else 0
                 
                 stats_str = (f"Time: {duration_s:.2f} s | "
@@ -157,7 +157,7 @@ class LLMOfflineTester:
                     rospy.logerr(f"{bcolors.FAIL}Result: FAIL - Task timed out after {self.inference_timeout} seconds.{bcolors.ENDC}")
                 else:
                     rospy.logerr(f"An error occurred during test case {i+1}: {e}")
-                
+                self.g_total_duration += self.inference_timeout
             rospy.loginfo('-' * 50) 
 
         pass_rate = (passed_tests / total_tests) * 100

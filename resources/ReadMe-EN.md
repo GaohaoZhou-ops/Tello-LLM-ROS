@@ -19,15 +19,15 @@ Based on this, we evaluated the performance of several different local models. F
 | llama3-groq-tool-use:8b | 4.7 GB | 50.00% | 2.03 | 261.59 |
 | qwen3:4b | 2.5 GB | 50.00% | 80.61 | 32.65 | 
 | qwen3:8b | 5.2 GB | 65.00% | 35.19 | 34.17 | 
-| qwen3:14b | 9.3 GB | | | |
+| qwen3:14b | 9.3 GB | 65.00% | 45.806 | 23.50 |
 | deepseek-coder-v2:16b | 8.9 GB | 60.00% | 1.56 | 376.31 | 
-| gpt-oss:20b | 14 GB | | | |
 
 Our preliminary experiments yielded the following conclusions:
 
 1. Most local model test cases failed due to the addition of the `takeoff` and `land` commands.
 2. For local models with small parameter counts, using plain text system prompts has a higher success rate than using JSON tool descriptions.
 3. Local models tend to split a single action into multiple commands, which may be related to the system prompts. For example, for "rotate 180 degrees," the model would output the command "rotate 90 degrees" twice.
+4. The response speed of the Code-type local model for a single task is much faster than that of the general-purpose model.
 
 To minimize overall system response time, we implemented direct calls for some explicit commands, such as `takeoff`. These commands are not fed into the model for inference. You can also add more direct commands by modifying the `direct_triggers` field in the `config/llm_tools.json` file as follows. The `takeoff`, `take off`, and `launch` commands can all be directly executed:
 
