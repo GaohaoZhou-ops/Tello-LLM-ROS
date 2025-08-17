@@ -2,7 +2,7 @@
     <arg name="drone_name" default="tello" />
 
     <!-- Code Llama -->
-    <arg name="ollama_model" default="codellama:7b" doc="The Ollama model to use"/>
+    <!-- <arg name="ollama_model" default="codellama:7b" doc="The Ollama model to use"/> -->
     <!-- <arg name="ollama_model" default="codellama:13b" doc="The Ollama model to use"/> -->
 
     <!-- Llama3 -->

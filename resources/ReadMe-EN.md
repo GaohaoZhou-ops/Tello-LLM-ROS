@@ -108,29 +108,15 @@ $ ollama stop codellama:7b
 
 ## Modifying System Prompts
 
-It's well known that system prompts significantly impact model performance. While the system prompts in the project have been carefully refined, they may not be suitable for your task. If you find that your model's performance is unsatisfactory, you can modify the system prompts to constrain the model. Modify the `create_system_prompt` function in the file `scripts/llm_utils.py`:
+As we all know, system prompts significantly impact model performance. While the system prompts in our project have been refined, they may not be suitable for your task. If you find that your model's performance is unsatisfactory, you can modify the system prompts to constrain them. We break system prompts into two parts: `Common System Prompts` and `Tool Descriptions`. These files are saved in the `config` directory. The final system prompt is a concatenation of the two parts:
 
-```py
-def create_system_prompt(tools_config): 
-""" 
-Dynamically builds the system prompt using the loaded tools config. 
-This function is now the single source of truth for the system prompt. 
-
-:param tools_config: The loaded tools configuration dictionary. 
-:return: The formatted system prompt string. 
-""" 
-prompt = """You are a simple robot command translator. Your ONLY job is to break down a user's request into a list of simple, one-line text commands for a drone, based on the tools provided.
-...
-```
-
-There are several rules in the prompt words to prevent drones from taking off and landing frequently:
-
-```python
-**RULES:**
-- **CRITICAL**: The final command sequence MUST be enclosed between `[START_COMMANDS]` and `[END_COMMANDS]` tags.
-- Inside the tags, output only the command text, with each command on a new line.
-- By default, the drone is already in the air and no additional takeoff call is required, unless there is a clear takeoff instruction.
-- Unless there is a clear landing instruction, the land command cannot be called.
+```bash
+├── config
+│ ├── common_system_prompt-CN.txt
+│ ├── common_system_prompt-EN.txt
+│ ├── llm_tools.json
+│ ├── pure_text_tools_description-CN.txt
+│ └── pure_text_tools_description-EN.txt
 ```
 
 ## Adding Tools

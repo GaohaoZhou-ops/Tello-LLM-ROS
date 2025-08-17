@@ -107,29 +107,15 @@ $ ollama stop codellama:7b
 
 ## 修改系统提示词
 
-众所周知，系统提示词对模型的性能表现影响很大，尽管工程中的系统提示此内容已经经过了多次打磨，但并不一定适合你的任务。如果你发现模型在表现上无法令人满意，那么可以通过修改系统提示词的方式给模型指令约束。修改文件 `scripts/llm_utils.py` 中的 `create_system_prompt` 函数：
+众所周知，系统提示词对模型的性能表现影响很大，尽管工程中的系统提示此内容已经经过了多次打磨，但并不一定适合你的任务。如果你发现模型在表现上无法令人满意，那么可以通过修改系统提示词的方式给模型指令约束。我们将系统提示词拆解成两部分 `通用系统提示词` 和 `工具描述`，这些文件保存在 `config` 目录下，最终的系统提示词是两部分拼接得到：
 
-```py
-def create_system_prompt(tools_config):
-    """
-    Dynamically builds the system prompt using the loaded tools config.
-    This function is now the single source of truth for the system prompt.
-    
-    :param tools_config: The loaded tools configuration dictionary.
-    :return: The formatted system prompt string.
-    """
-    prompt = """You are a simple robot command translator. Your ONLY job is to break down a user's request into a list of simple, one-line text commands for a drone, based on the tools provided.
-...
-```
-
-在提示词中有下面几条规则用来防止无人机频繁起降：
-
-```python
-**RULES:**
-- **CRITICAL**: The final command sequence MUST be enclosed between `[START_COMMANDS]` and `[END_COMMANDS]` tags.
-- Inside the tags, output ONLY the command text, with each command on a new line.
-- By default, the drone is already in the air and no additional takeoff call is required, unless there is a clear takeoff instruction.
-- Unless there is a clear landing instruction, the land command cannot be called.
+```bash
+├── config
+│   ├── common_system_prompt-CN.txt
+│   ├── common_system_prompt-EN.txt
+│   ├── llm_tools.json
+│   ├── pure_text_tools_description-CN.txt
+│   └── pure_text_tools_description-EN.txt
 ```
 
 ## 添加工具
