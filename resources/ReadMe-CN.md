@@ -7,7 +7,7 @@
 ## 本地模型测试
 当前我们仅在 `Nvidia Jetson Orin 64GB DK` 这个硬件上开展了实验，未来我们会尝试在更丰富的硬件设备上进行测试。实验环境的系统与库信息如下：
 
-![jetson_release](./jetson_release.png)
+![jetson_release](./images/jetson_release.png)
 
 在此基础上我们对多个不同的本地模型性能与表现进行了评估，测试样本可以查看脚本 `src/tello_llm_ros/scripts/test_llm_offline.py` 中 `_define_test_cases` 函数的内容：
 
@@ -113,7 +113,7 @@ $ ollama ps
 $ ollama stop codellama:7b
 ```
 
-![ollama-stop](ollama_stop.png)
+![ollama-stop](./images/ollama_stop.png)
 
 ## 修改系统提示词
 
@@ -150,7 +150,7 @@ $ source devel/setup.bash
 $ roslaunch tello_llm_ros offline_llm_test.launch
 ```
 
-![LLM-test](./LLM-test.png)
+![LLM-test](./images/LLM-test.png)
 
 ## 真机与仿真器运行
 
@@ -189,13 +189,15 @@ $ roslaunch tello_llm_ros control_node.launch
 $ roslaunch tello_llm_ros llm_bringup.launch
 ```
 
+![rviz](./images/rviz.png)
+
 现在你可以通过一个简单客户端进入交互模式，输入 `quit` 退出：
 
 ```bash
 $ rosrun tello_llm_ros simple_llm_client.py 
 ```
 
-![interface](./LLM-interface.png)
+![interface](./images/LLM-interface.png)
 
 或者直接在终端向话题发布一个简单的命令：
 
@@ -215,5 +217,5 @@ goal:
   user_prompt: 'move back 3m'" 
 ```
 
-![topic_control](./topic_control.png)
+![topic_control](./images/topic_control.png)
 

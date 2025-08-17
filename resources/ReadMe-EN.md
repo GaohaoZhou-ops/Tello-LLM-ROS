@@ -7,7 +7,7 @@ This repository implements controlling the Tello drone using LLM within the ROS 
 ## Local Model Testing
 Currently, we have only conducted experiments on the Nvidia Jetson Orin 64GB DK. We will explore testing on a wider range of hardware devices in the future. The system and library information for the experimental environment are as follows:
 
-![jetson_release](./jetson_release.png)
+![jetson_release](./images/jetson_release.png)
 
 Based on this, we evaluated the performance of several different local models. For test samples, see the `_define_test_cases` function in the `src/tello_llm_ros/scripts/test_llm_offline.py` script:
 
@@ -116,7 +116,7 @@ $ ollama ps
 $ ollama stop codellama:7b
 ```
 
-![ollama-stop](ollama_stop.png)
+![ollama-stop](./images/ollama_stop.png)
 
 ## Modifying System Prompts
 
@@ -153,7 +153,7 @@ $ source devel/setup.bash
 $ roslaunch tello_llm_ros offline_llm_test.launch
 ```
 
-![LLM-test](./LLM-test.png)
+![LLM-test](./images/LLM-test.png)
 
 ## Running on a real device or simulator
 
@@ -192,13 +192,15 @@ $ roslaunch tello_llm_ros control_node.launch
 $ roslaunch tello_llm_ros llm_bringup.launch
 ```
 
+![rviz](./images/rviz.png)
+
 You can now enter interactive mode using a simple client and exit by typing `quit`:
 
 ```bash
 $ rosrun tello_llm_ros simple_llm_client.py
 ```
 
-![interface](./LLM-interface.png)
+![interface](./images/LLM-interface.png)
 
 Or, you can publish a simple command to the topic directly in the terminal:
 
@@ -218,4 +220,4 @@ goal:
 user_prompt: 'move back 3m'"
 ```
 
-![topic_control](./topic_control.png)
+![topic_control](./images/topic_control.png)
