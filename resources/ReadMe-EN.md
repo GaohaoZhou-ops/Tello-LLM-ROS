@@ -150,6 +150,8 @@ We have also extracted the tool functionality and saved it to a json file. You c
 Before officially starting, we strongly recommend using the provided test nodes to test the model's performance and efficiency on your current device. If the success rate is too low or the average task response time is too long, we recommend replacing the model.
 
 ```bash
+$ unset all_proxy
+$ unset ALL_PROXY
 $ cd tello_ws
 $ source devel/setup.bash
 $ roslaunch tello_llm_ros test_llm.launch
@@ -184,6 +186,8 @@ $ roslaunch tello_llm_ros tello.launch
 
 Open a new terminal and run the model interactive window. Exit the node by typing `quit`:
 ```bash
+$ unset all_proxy
+$ unset ALL_PROXY
 $ cd tello_ws
 $ source devel/setup.bash
 $ roslaunch tello_llm_ros llm_interface.launch
@@ -216,6 +220,8 @@ $ roslaunch tello_llm_ros tello.launch
 
 Open a new terminal to run the model interactive window:
 ```bash
+$ unset all_proxy
+$ unset ALL_PROXY
 $ cd tello_ws
 $ source devel/setup.bash
 $ roslaunch tello_llm_ros llm_interface.launch

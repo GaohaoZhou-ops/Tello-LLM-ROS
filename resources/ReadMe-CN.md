@@ -150,6 +150,8 @@ def create_system_prompt(tools_config):
 在正式开始之前，我们强烈建议先用我们提供的测试节点测试一下模型在你当前设备上的性能与效率，如果成功率太低或者平均任务反应时长太长，那么建议更换模型。
 
 ```bash
+$ unset all_proxy
+$ unset ALL_PROXY
 $ cd tello_ws
 $ source devel/setup.bash
 $ roslaunch tello_llm_ros test_llm.launch
@@ -184,6 +186,8 @@ $ roslaunch tello_llm_ros tello.launch
 
 新开一个终端运行模型交互窗口，通过输入 `quit` 退出节点：
 ```bash
+$ unset all_proxy
+$ unset ALL_PROXY
 $ cd tello_ws
 $ source devel/setup.bash
 $ roslaunch tello_llm_ros llm_interface.launch
@@ -216,6 +220,8 @@ $ roslaunch tello_llm_ros tello.launch
 
 新开一个终端运行模型交互窗口：
 ```bash
+$ unset all_proxy
+$ unset ALL_PROXY
 $ cd tello_ws
 $ source devel/setup.bash
 $ roslaunch tello_llm_ros llm_interface.launch
