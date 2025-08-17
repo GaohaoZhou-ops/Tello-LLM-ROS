@@ -10,17 +10,24 @@ Based on this, we evaluated the performance of several different local models. F
 
 |Model|Accuracy|Average Response Time s|Average Generation Rate tokens/s|
 |--|--|--|--|
-|Qwen3:4b| | | |
+|Qwen3:4b| 55.00% | 89.25 | 36.68 |
 |Qwen3:8b| 60.00% | 52.245 | 40.684 |
 |Qwen3:14b| | | |
 |CodeLlama:7b|30.00%|3.265|441.44|
+|CodeLlama:13b||||
 |Llama3.1:8b| | | |
 |DeepSeek-r1:1.7b| | | |
 |DeepSeek-r1:8b| | | |
 
-Based on our test results, most models experience errors due to frequent `takeoff` and `land` commands, indicating that local, small-parameter models still have limited understanding of long-term tasks. Although we have added preconditions to the system prompts, one option to avoid meaningless up/down calls for every command is to remove keywords. However, this may invalidate some commands that inherently carry takeoff and landing implications.
+Our preliminary experiments yielded the following conclusions:
 
-To minimize overall system response time, we implement direct calls for some explicit commands, such as `takeoff`, which are not fed into the model for inference. You can also add more direct commands by modifying the `direct_triggers` field in the `config/llm_tools.json` file as follows. The `takeoff`, `take off`, and `launch` commands can all be directly executed:
+1. Most local model test cases failed due to the addition of the `takeoff` and `land` commands.
+
+2. For local models with small parameter counts, using plain text system prompts has a higher success rate than using JSON tool descriptions.
+
+3. Local models tend to split a single action into multiple commands, which may be related to the system prompts. For example, for "rotate 180 degrees," the model would output the command "rotate 90 degrees" twice.
+
+To minimize overall system response time, we implemented direct calls for some explicit commands, such as `takeoff`. These commands are not fed into the model for inference. You can also add more direct commands by modifying the `direct_triggers` field in the `config/llm_tools.json` file as follows. The `takeoff`, `take off`, and `launch` commands can all be directly executed:
 
 ```json
 {
@@ -83,15 +90,15 @@ $ ollama pull qwen3:8b
 
 ----
 # How to Use
-We provide multiple usage modes, including testing on a real device and a model, testing a model independently, and testing a model and a mock.
+We provide multiple usage modes, including real-device and model testing, standalone model testing, and model and mock testing.
 
-If you wanna to use Xbox joy to control tello, you may use our an other repo:
+If you want to control the drone with an XBox controller, you can use our other open-source repository:
 
 * XBox Controller Reader: [https://github.com/GaohaoZhou-ops/XboxControllerReader](https://github.com/GaohaoZhou-ops/XboxControllerReader)
 
 ## Stopping Unnecessary Models
 
-Before calling a model, to prevent resources from being preempted by an open model, you can terminate the running model using the following command:
+Before calling a model, to avoid resources being preempted by open models, you can shut down the running model using the following command:
 
 ```bash
 $ ollama ps
@@ -102,7 +109,7 @@ $ ollama stop codellama:7b
 
 ## Modifying System Prompts
 
-It is well known that system prompts significantly impact model performance. Although the system prompts in the project have been carefully refined, they may not be suitable for your task. If you find that the model's performance is unsatisfactory, you can modify the system prompts to constrain the model. Modify the `create_system_prompt` function in the file `scripts/llm_utils.py`:
+It's well known that system prompts significantly impact model performance. While the system prompts in the project have been carefully refined, they may not be suitable for your task. If you find that your model's performance is unsatisfactory, you can modify the system prompts to constrain the model. Modify the `create_system_prompt` function in the file `scripts/llm_utils.py`:
 
 ```py
 def create_system_prompt(tools_config): 
@@ -122,32 +129,18 @@ There are several rules in the prompt words to prevent drones from taking off an
 ```python
 **RULES:**
 - **CRITICAL**: The final command sequence MUST be enclosed between `[START_COMMANDS]` and `[END_COMMANDS]` tags.
-- Inside the tags, output ONLY the command text, with each command on a new line.
+- Inside the tags, output only the command text, with each command on a new line.
 - By default, the drone is already in the air and no additional takeoff call is required, unless there is a clear takeoff instruction.
 - Unless there is a clear landing instruction, the land command cannot be called.
 ```
 
 ## Adding Tools
 
-We have also extracted the tool functionality and saved it to a json file. You can add tools by modifying the `config/llm_tools.json` file:
+If you plan to use a large model, we recommend modifying the `config/llm_tools.json` file to define your tool content.
 
-```json
-"tools": [
-{
-"name": "takeoff",
-"description": "Initiates the drone's automatic takeoff sequence...",
-"direct_triggers": [
-"takeoff",
-"take off",
-"launch"
-],
-"parameters": [],
-"ros_service": "/takeoff",
-"service_type": "Trigger"
-},
-// ...
-]
-```
+If you plan to use a small model, we recommend modifying the `config/pure_text_system_prompt-EN.txt` file to define your tool content.
+
+Regardless of which method you choose to add tools, you must implement them yourself.
 
 ## Testing Model Performance
 
@@ -163,17 +156,17 @@ $ roslaunch tello_llm_ros test_llm.launch
 
 ![LLM-test](./LLM-test.png)
 
-## Local Model + Simulation Testing
+## Local Model + Simulation Test
 
-After confirming the model to use, you can first run it in mock mode to test whether the current model performs as expected, as the test cases cover a small number of samples.
+After confirming the model to use, you can first run it in mock mode to test whether the current model performs as expected, as the test case covers too few samples.
 
-* Enable simulation by modifying the `use_sim` field in the `launch/tello.launch` file to `true`:
+* Modify the `use_sim` field in the `launch/tello.launch` file to `true` to enable simulation:
 
 ```xml
 <arg name="use_sim" default="true" doc="Set to true to run in simulation mode"/>
 ```
 
-* Modify In the `launch/llm_interface.launch` file, the `ollama_model` field specifies the model you want to run:
+* Modify the `ollama_model` field in the `launch/llm_interface.launch` file to the model you want to run:
 
 ```xml
 <arg name="ollama_model" default="qwen3:4b" doc="The Ollama model to use"/>
@@ -188,7 +181,41 @@ $ roslaunch tello_llm_ros tello.launch
 
 ![rviz](./rviz.png)
 
-Open a new terminal and run the model interactive window. Exit the node by typing `quit`:
+Open a new terminal and run the model interaction window. Exit the node by typing `quit`:
+```bash
+$ unset all_proxy
+$ unset ALL_PROXY
+$ cd tello_ws
+$ source devel/setup.bash
+$ roslaunch tello_llm_ros llm_interface.launch
+```
+
+![LLM-interface](./LLM-interface.png)
+
+## Local Model + Real Device Testing
+
+If your model performs as expected, you can now test it on a real device:
+
+* Change the `use_sim` field in the `launch/tello.launch` file to `false` Enable the real machine:
+
+```xml
+<arg name="use_sim" default="true" doc="Set to true to run in simulation mode"/>
+```
+
+* Modify the `ollama_model` field in the `launch/llm_interface.launch` file to the model you want to run:
+
+```xml
+<arg name="ollama_model" default="qwen3:4b" doc="The Ollama model to use"/>
+```
+
+Open a terminal and run the real machine:
+```bash
+$ cd tello_ws
+$ source devel/setup.bash
+$ roslaunch tello_llm_ros tello.launch
+```
+
+Open a new terminal to run the model interaction window and exit the node by typing `quit`:
 ```bash
 $ unset all_proxy
 $ unset ALL_PROXY
@@ -209,20 +236,20 @@ If your model performs as expected, you can now test it on a real device:
 <arg name="use_sim" default="true" doc="Set to true to run in simulation mode"/>
 ```
 
-* Modify the `ollama_model` field in the `launch/llm_interface.launch` file to the model you want to run:
+* Modify the `ollama_model` field in the `launch/llm_interface.launch` file The field contains the model you want to run:
 
 ```xml
 <arg name="ollama_model" default="qwen3:4b" doc="The Ollama model to use"/>
 ```
 
-Open a terminal to run the real device:
+Open a terminal and run the real machine:
 ```bash
 $ cd tello_ws
 $ source devel/setup.bash
 $ roslaunch tello_llm_ros tello.launch
 ```
 
-Open a new terminal to run the model interactive window:
+Open a new terminal and run the model interactive window:
 ```bash
 $ unset all_proxy
 $ unset ALL_PROXY

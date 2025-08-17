@@ -6,7 +6,7 @@ import ollama
 import json
 import re
 import os
-from llm_utils import create_system_prompt, parse_llm_response, bcolors
+from llm_utils import create_system_prompt, parse_llm_response, bcolors, load_pure_system_prompt, get_file_type
 
 # ANSI color codes for terminal
 class bcolors:
@@ -31,9 +31,15 @@ class LLMOfflineTester:
             rospy.signal_shutdown("Tools config file not found.")
             return
 
-        with open(tools_config_path, 'r') as f:
-            self.tools_config = json.load(f)
-        rospy.loginfo(f"Successfully loaded {len(self.tools_config['tools'])} tools from {tools_config_path}")
+        if get_file_type(tools_config_path) == 'txt':
+            rospy.logwarn(f"System prompt is pure text file, loading...")
+            self.system_prompt = load_pure_system_prompt(tools_config_path)
+        else:
+            rospy.logwarn(f"System prompt is json file, parasing and creating...")
+            with open(tools_config_path, 'r') as f:
+                self.tools_config = json.load(f)
+            rospy.loginfo(f"Successfully loaded {len(self.tools_config['tools'])} tools from {tools_config_path}")
+            self.system_prompt = create_system_prompt(self.tools_config)
 
         try:
             self.ollama_client = ollama.Client()
@@ -42,7 +48,6 @@ class LLMOfflineTester:
             rospy.logerr(f"Failed to connect to Ollama client. Please ensure Ollama is running. Error: {e}")
             return
             
-        self.system_prompt = create_system_prompt(self.tools_config)
         self.test_cases = self._define_test_cases()
         rospy.loginfo(f"LLM Offline Tester is ready. Model: {self.ollama_model}")
 

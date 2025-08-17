@@ -12,24 +12,28 @@ from tello_llm_ros.srv import Move, MoveRequest
 import os
 import subprocess
 
-from llm_utils import create_system_prompt, parse_llm_response
+from llm_utils import create_system_prompt, parse_llm_response, load_pure_system_prompt, get_file_type
 
 subprocess.run(["export", "LC_ALL='en_US.UTF-8'"], shell=True)
 
 class TelloLLMController:
     def __init__(self):
         rospy.init_node('tello_llm_controller')
-        self.drone_name = rospy.get_param("~drone_name", "tello")
+        self.drone_name = rospy.get_param("~drone_name", "tello") 
         self.ollama_model = rospy.get_param("~ollama_model", "llama3")
         tools_config_path = rospy.get_param("~tools_config_path")
 
-        with open(tools_config_path, 'r') as f: self.tools_config = json.load(f)
-
-        rospy.loginfo(f"Loaded {len(self.tools_config['tools'])} tools from config.")
         self.ollama_client = ollama.Client()
         
-        self.system_prompt = create_system_prompt(self.tools_config)
-        
+        if get_file_type(tools_config_path) == 'txt':
+            rospy.logwarn(f"System prompt is pure text file, loading...")
+            self.system_prompt = load_pure_system_prompt(tools_config_path)
+        else:
+            rospy.logwarn(f"System prompt is json file, parasing and creating...")
+            with open(tools_config_path, 'r') as f: self.tools_config = json.load(f)
+            rospy.loginfo(f"Loaded {len(self.tools_config['tools'])} tools from config.")
+            self.system_prompt = create_system_prompt(self.tools_config)
+            
         self.messages = [{'role': 'system', 'content': self.system_prompt}]
         self.service_clients = {}
         self._create_service_clients()

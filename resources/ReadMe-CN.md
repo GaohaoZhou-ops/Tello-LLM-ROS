@@ -10,15 +10,21 @@
 
 |Model|准确率|平均响应时长 s|平均生成速度 tokens/s|
 |--|--|--|--|
-|Qwen3:4b| | | |
+|Qwen3:4b| 55.00% | 89.25 | 36.68 |
 |Qwen3:8b| 60.00% | 52.245 | 40.684 |
-|Qwen3:14b| | | |
+|Qwen3:14b|  | | |
 |CodeLlama:7b|30.00%|3.265|441.44|
+|CodeLlama:13b||||
 |Llama3.1:8b| | | |
 |DeepSeek-r1:1.7b| | | |
 |DeepSeek-r1:8b| | | |
 
-根据我们的测试结果来看，大部分模型的错误率过高的原因在于频繁生成 `takeoff` 和 `land` 命令，说明本地小参数量模型对长程任务的理解仍然有限，尽管我们已经在系统提示词中添加了前提条件。如果你想要避免每条指令都触发无意义的升降，那么一个可选的方案是做关键词删除，但这种操作可能会导致一些本身带有起降含义的命令失效；
+
+我们初步的实验得到了以下几点结论：
+
+1. 大多数本地模型测试样本失败是由于添加了额外的 `takeoff` 和 `land` 命令；
+2. 对于本地小参数量的模型而言，使用纯文本系统提示词比使用 json 定义工具描述成功率更高；
+3. 本地模型容易将一个动作拆成多个动作指令，这可能和系统提示词有关，例如 “旋转180度”，模型会输出2次 “旋转90度”的命令；
 
 为了尽可能降低整体系统响应时长，我们对一些明确指令采取直接调用的形式，这些指令不会输入模型进行推理，例如 `takeoff`。你也可以添加更多直接运行的指令，修改 `config/llm_tools.json` 文件中 `direct_triggers` 字段如下所示，`takeoff`，`take off`，`launch` 这三条指令都是可以直接响应的：
 
@@ -129,25 +135,11 @@ def create_system_prompt(tools_config):
 
 ## 添加工具
 
-我们也将工具功能提取出来并保存到一个 json 文件中，你可以通过修改 `config/llm_tools.json` 文件以添加工具：
+如果你准备调用大模型，那么建议修改文件 `config/llm_tools.json` 来定义你的工具内容；
 
-```json
-  "tools": [
-    {
-      "name": "takeoff",
-      "description": "Initiates the drone's automatic takeoff sequence...",
-      "direct_triggers": [
-        "takeoff",
-        "take off",
-        "launch"
-      ],
-      "parameters": [],
-      "ros_service": "/takeoff",
-      "service_type": "Trigger"
-    },
-    // ...
-  ]
-```
+如果你准备调用小模型，那么建议修改纯文本文件 `config/pure_text_system_prompt-EN.txt` 来定义你的工具；
+
+但无论你准备用哪种方法添加工具，都需要自己实现；
 
 ## 测试模型性能
 
