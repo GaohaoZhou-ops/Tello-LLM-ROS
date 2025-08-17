@@ -6,7 +6,7 @@ import ollama
 import json
 import re
 import os
-from llm_utils import create_system_prompt, parse_llm_response, bcolors, load_pure_system_prompt, get_file_type
+from llm_utils import get_system_prompts, parse_llm_response
 
 # ANSI color codes for terminal
 class bcolors:
@@ -25,21 +25,19 @@ class LLMOfflineTester:
         rospy.init_node('tello_llm_offline_tester')
         
         self.ollama_model = rospy.get_param("~ollama_model", "llama3.1:8b")
-        tools_config_path = rospy.get_param("~tools_config_path")
-        if not os.path.exists(tools_config_path):
-            rospy.logerr(f"Tools config file not found at: {tools_config_path}")
+        common_system_prompt_file = rospy.get_param("~common_system_prompt_file")
+        tools_description_file = rospy.get_param("~tools_description_file")
+        
+        if not os.path.exists(common_system_prompt_file):
+            rospy.logerr(f"Tools config file not found at: {common_system_prompt_file}")
+            rospy.signal_shutdown("Common system prompt file not found.")
+            return
+        if not os.path.exists(tools_description_file):
+            rospy.logerr(f"Tools description file not found at: {tools_description_file}")
             rospy.signal_shutdown("Tools config file not found.")
             return
-
-        if get_file_type(tools_config_path) == 'txt':
-            rospy.logwarn(f"System prompt is pure text file, loading...")
-            self.system_prompt = load_pure_system_prompt(tools_config_path)
-        else:
-            rospy.logwarn(f"System prompt is json file, parasing and creating...")
-            with open(tools_config_path, 'r') as f:
-                self.tools_config = json.load(f)
-            rospy.loginfo(f"Successfully loaded {len(self.tools_config['tools'])} tools from {tools_config_path}")
-            self.system_prompt = create_system_prompt(self.tools_config)
+        
+        self.system_prompt = get_system_prompts(common_system_prompt_file, tools_description_file)
 
         try:
             self.ollama_client = ollama.Client()

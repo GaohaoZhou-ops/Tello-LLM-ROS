@@ -1,0 +1,10 @@
+takeoff: takeoff;
+land: landing;
+move_forward N m: fly forward N meters;
+move_backward N m: fly backward N meters;
+move_left N m: parallel move left N meters;
+move_right N m: parallel move right N meters;
+move_up N m: ascend N meters;
+move_down N m: descend N meters;
+rotate_clockwise N degrees: rotate clockwise N degrees;
+rotate_counter_clockwise N degrees: rotate counterclockwise N degrees;

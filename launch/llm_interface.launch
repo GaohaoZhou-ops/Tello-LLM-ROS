@@ -2,14 +2,14 @@
     <arg name="drone_name" default="tello" />
 
     <!-- Code Llama -->
-    <!-- <arg name="ollama_model" default="codellama:7b" doc="The Ollama model to use"/> -->
+    <arg name="ollama_model" default="codellama:7b" doc="The Ollama model to use"/>
     <!-- <arg name="ollama_model" default="codellama:13b" doc="The Ollama model to use"/> -->
 
     <!-- Llama3 -->
     <!-- <arg name="ollama_model" default="llama3.1:8b" doc="The Ollama model to use"/> -->
 
     <!-- DeepSeek -->
-    <arg name="ollama_model" default="deepseek-r1:8b" doc="The Ollama model to use"/>
+    <!-- <arg name="ollama_model" default="deepseek-r1:8b" doc="The Ollama model to use"/> -->
     <!-- <arg name="ollama_model" default="deepseek-r1:14b" doc="The Ollama model to use"/> -->
 
     <!-- Qwen3 -->
@@ -19,11 +19,18 @@
 
     <!-- System prompt -->
     <!-- <arg name="tools_config_path" default="$(find tello_llm_ros)/config/llm_tools.json" /> -->
-    <arg name="tools_config_path" default="$(find tello_llm_ros)/config/pure_text_system_prompt-EN.txt" />
+    <arg name="tools_config_path" default="$(find tello_llm_ros)/config/llm_tools.json" />
+    <arg name="common_system_prompt_file" default="$(find tello_llm_ros)/config/common_system_prompt-EN.txt" />
+    <!-- <arg name="tools_description_file" default="$(find tello_llm_ros)/config/pure_text_tools_description-EN.txt" /> -->
+    <arg name="tools_description_file" default="$(find tello_llm_ros)/config/llm_tools.json" />
+
 
     <node name="tello_llm_controller" pkg="tello_llm_ros" type="llm_node.py" output="screen">
         <param name="drone_name" value="$(arg drone_name)" />
         <param name="ollama_model" value="$(arg ollama_model)" />
-        <param name="tools_config_path" value="$(arg tools_file)" />
+        <param name="tools_config_path" value="$(arg tools_config_path)" />
+        <param name="common_system_prompt_file" value="$(arg common_system_prompt_file)" />
+        <param name="tools_description_file" value="$(arg tools_description_file)" />
+
     </node>
 </launch>

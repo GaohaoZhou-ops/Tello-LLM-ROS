@@ -17,12 +17,14 @@
     <!-- <arg name="ollama_model" default="qwen3:14b" doc="The Ollama model to use"/> -->
 
     <!-- System prompt -->
-    <!-- <arg name="tools_config_path" default="$(find tello_llm_ros)/config/llm_tools.json" /> -->
-    <arg name="tools_config_path" default="$(find tello_llm_ros)/config/pure_text_system_prompt-EN.txt" />
+    <arg name="common_system_prompt_file" default="$(find tello_llm_ros)/config/common_system_prompt-EN.txt" />
+    <arg name="tools_description_file" default="$(find tello_llm_ros)/config/pure_text_tools_description-EN.txt" />
+
 
     <node name="tello_llm_controller" pkg="tello_llm_ros" type="test_llm_offline.py" output="screen">
         <param name="ollama_model" value="$(arg ollama_model)" />
-        <param name="tools_config_path" value="$(arg tools_config_path)" />
+        <param name="common_system_prompt_file" value="$(arg common_system_prompt_file)" />
+        <param name="tools_description_file" value="$(arg tools_description_file)" />
     </node>
 
 </launch>

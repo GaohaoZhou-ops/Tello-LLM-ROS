@@ -1,0 +1,10 @@
+takeoff: 起飞;
+land: 降落;
+move_forward N m: 向前飞行N米;
+move_backward N m: 向后飞行N米;
+move_left N m: 向左平移N米;
+move_right N m: 向右平移N米;
+move_up N m: 上升N米;
+move_down N m: 下降N米;
+rotate_clockwise N degrees: 顺时针旋转N度;
+rotate_counter_clockwise N degrees: 逆时针旋转N度;

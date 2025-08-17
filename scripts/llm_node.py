@@ -2,7 +2,6 @@
 
 import rospy
 import ollama
-import yaml
 import json
 import re
 import time
@@ -10,30 +9,39 @@ from math import pi
 from std_srvs.srv import Trigger, TriggerRequest
 from tello_llm_ros.srv import Move, MoveRequest
 import os
-import subprocess
 
-from llm_utils import create_system_prompt, parse_llm_response, load_pure_system_prompt, get_file_type
+from llm_utils import get_system_prompts, parse_llm_response
 
-subprocess.run(["export", "LC_ALL='en_US.UTF-8'"], shell=True)
+# --- 修正点 1: 正确设置环境变量 ---
+# 使用 os.environ 来设置环境变量，这会直接影响当前 Python 进程
+os.environ['LC_ALL'] = 'en_US.UTF-8'
 
 class TelloLLMController:
     def __init__(self):
         rospy.init_node('tello_llm_controller')
-        self.drone_name = rospy.get_param("~drone_name", "tello") 
+        self.drone_name = rospy.get_param("~drone_name", "tello")
         self.ollama_model = rospy.get_param("~ollama_model", "llama3")
-        tools_config_path = rospy.get_param("~tools_config_path")
 
-        self.ollama_client = ollama.Client()
+        # Get key file from ros params server
+        tools_config_path = rospy.get_param("~tools_config_path")
+        common_system_prompt_file = rospy.get_param("~common_system_prompt_file")
+        tools_description_file = rospy.get_param("~tools_description_file")
         
-        if get_file_type(tools_config_path) == 'txt':
-            rospy.logwarn(f"System prompt is pure text file, loading...")
-            self.system_prompt = load_pure_system_prompt(tools_config_path)
-        else:
-            rospy.logwarn(f"System prompt is json file, parasing and creating...")
-            with open(tools_config_path, 'r') as f: self.tools_config = json.load(f)
-            rospy.loginfo(f"Loaded {len(self.tools_config['tools'])} tools from config.")
-            self.system_prompt = create_system_prompt(self.tools_config)
-            
+        if not os.path.exists(common_system_prompt_file):
+            rospy.logerr(f"Tools config file not found at: {common_system_prompt_file}")
+            rospy.signal_shutdown("Common system prompt file not found.")
+            return
+        if not os.path.exists(tools_description_file):
+            rospy.logerr(f"Tools description file not found at: {tools_description_file}")
+            rospy.signal_shutdown("Tools config file not found.")
+            return
+        
+        # Generate systemp prompt by using key files
+        self.system_prompt = get_system_prompts(common_system_prompt_file, tools_description_file)
+
+        # Load ros service client info
+        with open(tools_config_path, 'r') as f: self.tools_config = json.load(f)
+        self.ollama_client = ollama.Client()
         self.messages = [{'role': 'system', 'content': self.system_prompt}]
         self.service_clients = {}
         self._create_service_clients()
@@ -53,14 +61,16 @@ class TelloLLMController:
             except rospy.ROSException:
                 rospy.logerr(f"Service '{service_name}' not available. Tool '{tool_name}' will be disabled.")
 
-
-
     def parse_direct_command(self, user_input):
         """
         增强版的直接命令解析器。
         当匹配到简单关键词时，会自动应用默认参数。
         """
-        clean_input = user_input.lower().strip()
+        # --- 核心修正点 2: 统一输入格式 ---
+        # 将输入字符串中的下划线 '_' 替换为空格 ' '
+        # 这使得 "move_backward" 和 "move backward" 都能被正确匹配
+        clean_input = user_input.lower().strip().replace('_', ' ')
+
         for tool in self.tools_config['tools']:
             if 'direct_triggers' not in tool:
                 continue
@@ -79,6 +89,7 @@ class TelloLLMController:
 
                 # 方案2: 正则表达式匹配 (保持不变)
                 elif isinstance(trigger, dict) and 'pattern' in trigger:
+                    # 由于 clean_input 已经被处理，现在可以匹配 "move backward 1.5m" 这样的格式了
                     match = re.match(trigger['pattern'], clean_input, re.IGNORECASE)
                     if match:
                         params = {}
@@ -90,7 +101,6 @@ class TelloLLMController:
                             elif unit in ['deg', 'degree', 'degrees']: value *= pi / 180.0
                             params[param_name] = value
                         return tool['name'], params
-        
         return None, None
     
     def execute_tool(self, tool_name, parameters):
@@ -117,7 +127,7 @@ class TelloLLMController:
             return f"OK! Executed '{tool_name}'. Msg: {response.message}" if response.success else f"Failed '{tool_name}'. Msg: {response.message}"
         except rospy.ServiceException as e: return f"Error calling service for '{tool_name}': {e}"
         except Exception as e: return f"An unexpected error occurred while executing '{tool_name}': {e}"
-
+        
 
     def run(self):
         while not rospy.is_shutdown():
@@ -134,7 +144,7 @@ class TelloLLMController:
                     execution_result = self.execute_tool(tool_name, params)
                     print(f"System: {execution_result}")
                 else:
-                    print("System: Command not matched directly, consulting LLM...")
+                    print(f"System: Command not matched directly, consulting [{self.ollama_model}] model...")
                     
                     messages_for_this_turn = [
                         {'role': 'system', 'content': self.system_prompt},
@@ -160,8 +170,10 @@ class TelloLLMController:
                     if not valid_commands:
                         print("System: No valid commands found in the LLM response. Please try again.")
                         continue
-                        
+                    print("LLM generated those valid commands:")
+                    rospy.logwarn(valid_commands)
                     print(f"System: Parse complete. Found {len(valid_commands)} valid commands. Executing...")
+
                     for i, command_line in enumerate(valid_commands):
                         if rospy.is_shutdown():
                             print("Mission aborted due to ROS shutdown.")
@@ -182,6 +194,7 @@ class TelloLLMController:
                             
                             rospy.sleep(3)
                         else:
+                            # 这一段理论上不应该再被触发了
                             print(f"Warning: Command '{command_line}' failed final parsing. Skipping.")
                     
                     print("--- Mission Complete ---")
@@ -189,13 +202,8 @@ class TelloLLMController:
             except KeyboardInterrupt:
                 print("\nExiting.")
                 break
-
-
-
-
             
 if __name__ == '__main__':
-    from tello_llm_ros.srv import Move, MoveRequest
     try:
         controller = TelloLLMController()
         controller.run()
