@@ -21,6 +21,7 @@ class TelloLLMController:
         rospy.init_node('tello_llm_controller')
         self.drone_name = rospy.get_param("~drone_name", "tello")
         self.ollama_model = rospy.get_param("~ollama_model", "llama3")
+        self.inference_timeout = rospy.get_param("~inference_timeout", 150)
 
         # Get key file from ros params server
         tools_config_path = rospy.get_param("~tools_config_path")

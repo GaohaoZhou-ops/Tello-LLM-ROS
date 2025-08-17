@@ -9,6 +9,7 @@
     <arg name="common_system_prompt_file" default="$(find tello_llm_ros)/config/common_system_prompt-EN.txt" />
     <!-- <arg name="tools_description_file" default="$(find tello_llm_ros)/config/pure_text_tools_description-EN.txt" /> -->
     <arg name="tools_description_file" default="$(find tello_llm_ros)/config/llm_tools.json" />
+    <arg name="inference_timeout" default="150" />
 
     <node name="tello_llm_controller" pkg="tello_llm_ros" type="llm_node.py" output="screen">
         <param name="drone_name" value="$(arg drone_name)" />
@@ -16,6 +17,6 @@
         <param name="tools_config_path" value="$(arg tools_config_path)" />
         <param name="common_system_prompt_file" value="$(arg common_system_prompt_file)" />
         <param name="tools_description_file" value="$(arg tools_description_file)" />
-
+        <param name="inference_timeout" value="$(arg inference_timeout)" />
     </node>
 </launch>

@@ -6,19 +6,8 @@ import ollama
 import json
 import re
 import os
-from llm_utils import get_system_prompts, parse_llm_response
+from llm_utils import get_system_prompts, parse_llm_response, bcolors
 
-# ANSI color codes for terminal
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
 class LLMOfflineTester:
     def __init__(self):
@@ -27,6 +16,7 @@ class LLMOfflineTester:
         self.ollama_model = rospy.get_param("~ollama_model", "llama3.1:8b")
         common_system_prompt_file = rospy.get_param("~common_system_prompt_file")
         tools_description_file = rospy.get_param("~tools_description_file")
+        self.inference_timeout = rospy.get_param("~inference_timeout")
         
         if not os.path.exists(common_system_prompt_file):
             rospy.logerr(f"Tools config file not found at: {common_system_prompt_file}")
@@ -40,7 +30,8 @@ class LLMOfflineTester:
         self.system_prompt = get_system_prompts(common_system_prompt_file, tools_description_file)
 
         try:
-            self.ollama_client = ollama.Client()
+            # Set a 150-second timeout for all requests to the Ollama client.
+            self.ollama_client = ollama.Client(timeout=inference_timeout)
             self.ollama_client.list() 
         except Exception as e:
             rospy.logerr(f"Failed to connect to Ollama client. Please ensure Ollama is running. Error: {e}")
@@ -160,10 +151,12 @@ class LLMOfflineTester:
                     rospy.loginfo(f"{bcolors.FAIL}{bcolors.BOLD}Result: FAIL{bcolors.ENDC}")
                     rospy.loginfo(f"{bcolors.WARNING}Expected Commands:{bcolors.ENDC}\n" + "\n".join(case['expected_commands']))
                     rospy.loginfo(f"{bcolors.OKCYAN}Generated Commands:{bcolors.ENDC}\n" + "\n".join(actual_commands))
-                    # rospy.loginfo(f"{bcolors.FAIL}Full LLM Output:\n{plan_text}{bcolors.ENDC}")
 
             except Exception as e:
-                rospy.logerr(f"An error occurred during test case {i+1}: {e}")
+                if "timeout" in str(e).lower():
+                    rospy.logerr(f"{bcolors.FAIL}Result: FAIL - Task timed out after {self.inference_timeout} seconds.{bcolors.ENDC}")
+                else:
+                    rospy.logerr(f"An error occurred during test case {i+1}: {e}")
                 
             rospy.loginfo('-' * 50) 
 

@@ -6,11 +6,13 @@
     <!-- System prompt -->
     <arg name="common_system_prompt_file" default="$(find tello_llm_ros)/config/common_system_prompt-EN.txt" />
     <arg name="tools_description_file" default="$(find tello_llm_ros)/config/pure_text_tools_description-EN.txt" />
+    <arg name="inference_timeout" default="150" />
 
     <node name="tello_llm_controller" pkg="tello_llm_ros" type="test_llm_offline.py" output="screen">
         <param name="ollama_model" value="$(arg ollama_model)" />
         <param name="common_system_prompt_file" value="$(arg common_system_prompt_file)" />
         <param name="tools_description_file" value="$(arg tools_description_file)" />
+        <param name="inference_timeout" value="$(arg inference_timeout)" />
     </node>
 
 </launch>
