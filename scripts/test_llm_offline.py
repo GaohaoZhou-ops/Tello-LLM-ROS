@@ -61,38 +61,40 @@ class LLMOfflineTester:
             # 1. Basic Single Actions
             {"prompt": "Take off.", "expected_commands": ["takeoff"]},
             {"prompt": "Land the drone.", "expected_commands": ["land"]},
+            
+            # 2. Basic Single Actions
             {"prompt": "向前飞1米", "expected_commands": ["move_forward 1m"]},
             {"prompt": "向后飞50厘米", "expected_commands": ["move_backward 0.5m"]},
             
-            # 2. Simple Sequences
+            # 3. Simple Sequences
             {"prompt": "Take off, go up 1 meter, then land.", "expected_commands": ["takeoff", "move_up 1m", "land"]},
             {"prompt": "先起飞, 然后向左平移半米, 最后降落", "expected_commands": ["takeoff", "move_left 0.5m", "land"]},
             
-            # 3. Rotations
+            # 4. Rotations
             {"prompt": "Turn right 90 degrees.", "expected_commands": ["rotate_clockwise 90 degrees"]},
             {"prompt": "向左旋转180度", "expected_commands": ["rotate_counter_clockwise 180 degrees"]},
             
-            # 4. More Complex Sequences
+            # 5. More Complex Sequences
             {"prompt": "Fly a triangle with 1.5m sides.", "expected_commands": ["move_forward 1.5m", "rotate_clockwise 120 degrees", "move_forward 1.5m", "rotate_clockwise 120 degrees", "move_forward 1.5m"]},
             {"prompt": "飞一个1米边长的等边三角形", "expected_commands": ["move_forward 1m", "rotate_clockwise 120 degrees", "move_forward 1m", "rotate_clockwise 120 degrees", "move_forward 1m"]},
             
-            # 5. Up/Down Sequences
+            # 6. Up/Down Sequences
             {"prompt": "Fly up 2 meters, then come down 1 meter.", "expected_commands": ["move_up 2m", "move_down 1m"]},
             {"prompt": "做一个“上上下下”的动作，每次半米", "expected_commands": ["move_up 0.5m", "move_down 0.5m", "move_up 0.5m", "move_down 0.5m"]},
             
-            # 6. Rectangular Path
+            # 7. Rectangular Path
             {"prompt": "Fly a rectangle 2m long and 1m wide.", "expected_commands": ["move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m", "rotate_clockwise 90 degrees", "move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m"]},
             {"prompt": "飞一个长2米，宽1米的长方形", "expected_commands": ["move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m", "rotate_clockwise 90 degrees", "move_forward 2m", "rotate_clockwise 90 degrees", "move_forward 1m"]},
             
-            # 7. Back and Forth
+            # 8. Back and Forth
             {"prompt": "Go forward 3 meters, then return to start.", "expected_commands": ["move_forward 3m", "move_backward 3m"]},
             {"prompt": "向前飞3米，然后飞回来", "expected_commands": ["move_forward 3m", "move_backward 3m"]},
             
-            # 8. Staircase Pattern
+            # 9. Staircase Pattern
             {"prompt": "Fly a staircase pattern: go up 50cm, forward 50cm, three times.", "expected_commands": ["move_up 0.5m", "move_forward 0.5m", "move_up 0.5m", "move_forward 0.5m", "move_up 0.5m", "move_forward 0.5m"]},
             {"prompt": "飞一个三级的楼梯，每级高半米，长半米", "expected_commands": ["move_up 0.5m", "move_forward 0.5m", "move_up 0.5m", "move_forward 0.5m", "move_up 0.5m", "move_forward 0.5m"]},
 
-            # 9. Rotational Sequence
+            # 10. Rotational Sequence
             {"prompt": "Look left, then right, then center.", "expected_commands": ["rotate_counter_clockwise 90 degrees", "rotate_clockwise 180 degrees", "rotate_counter_clockwise 90 degrees"]},
             {"prompt": "先向左看，再向右看，最后回到前面", "expected_commands": ["rotate_counter_clockwise 90 degrees", "rotate_clockwise 180 degrees", "rotate_counter_clockwise 90 degrees"]}
         ]
@@ -115,8 +117,9 @@ class LLMOfflineTester:
         rospy.loginfo(f"Total test cases: {total_tests}\n")
 
         for i, case in enumerate(self.test_cases):
-            rospy.loginfo(f"{bcolors.OKBLUE}--- Test {i+1}/{total_tests} ---{bcolors.ENDC}")
+            rospy.loginfo(f"{bcolors.OKBLUE}--- Testing {i+1}/{total_tests} ---{bcolors.ENDC}")
             rospy.loginfo(f"{bcolors.BOLD}Prompt:{bcolors.ENDC} {case['prompt']}")
+            rospy.loginfo(f"Model: {self.ollama_model}")
 
             messages = [
                 {'role': 'system', 'content': self.system_prompt},
@@ -161,18 +164,20 @@ class LLMOfflineTester:
 
             except Exception as e:
                 rospy.logerr(f"An error occurred during test case {i+1}: {e}")
-
-            rospy.loginfo("\n") 
+                
+            rospy.loginfo('-' * 50) 
 
         pass_rate = (passed_tests / total_tests) * 100
         color = bcolors.OKGREEN if pass_rate > 80 else bcolors.WARNING if pass_rate > 50 else bcolors.FAIL
         
         rospy.loginfo(f"{bcolors.HEADER}--- Test Suite Complete ---{bcolors.ENDC}")
         rospy.loginfo(f"Summary: ")
+        rospy.loginfo(f"        Model                       : {self.ollama_model}")
         rospy.loginfo(f"        Pass Rate                   : {passed_tests}/{total_tests} tests passed ({color}{pass_rate:.2f}%{bcolors.ENDC})")
         rospy.loginfo(f"        Total Cost                  : {self.g_total_duration:.3} seconds.")
-        rospy.loginfo(f"        Average Token Generate Speed: {self.g_total_tokens / self.g_total_duration:.5} tokens/s")
         rospy.loginfo(f"        Average Task Cost Time      : {self.g_total_duration / len(self.test_cases):.5} seconds.")
+        rospy.loginfo(f"        Average Token Generate Speed: {self.g_total_tokens / self.g_total_duration:.5} tokens/s")
+
 
 if __name__ == '__main__':
     try:

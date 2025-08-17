@@ -2,6 +2,9 @@
 
 这个仓库实现了在 ROS 框架下使用 LLM 对 Tello 无人机进行控制，并以自然语言指令作为输入。当前的版本仅支持通过本地 Ollama 模型的调用，我们正在测试使用在线模型和 Agent 系统的调用方式，一旦完成测试我们将在第一时间更新仓库。
 
+# Benchmarks
+
+## Local Model Test
 当前我们仅在 `Nvidia Jetson Orin 64GB DK` 这个硬件上开展了实验，未来我们会尝试在更丰富的硬件设备上进行测试。实验环境的系统与库信息如下：
 
 ![jetson_release](./jetson_release.png)
@@ -10,14 +13,15 @@
 
 |Model|大小|准确率|平均响应时长 s|平均生成速度 tokens/s|
 |--|--|--|--|--|
-|Qwen3:4b| 2.5 GB | | | | 
-|Qwen3:8b| 5.2 GB | | | | 
-|Qwen3:14b| 9.3 GB | | | |
-|CodeLlama:7b| 3.8 GB | 35.00% | 1.58 | 433.53 |
-|CodeLlama:13b| 4.7 GB | 55.00% | 3.44 | 191.98 |
-|Llama3.1:8b| 4.9 GB | 55.00% | 2.04 | 256.47 |
-|DeepSeek-r1:8b| 5.2 GB | | | |
-|DeepSeek-r1:14b| 9.0 GB | | | |
+| codellama:7b | 3.8 GB | 35.00% | 1.58 | 433.53 |
+| codellama:13b | 4.7 GB | 55.00% | 3.44 | 191.98 |
+| llama3.1:8b | 4.9 GB | 60.00% | 2.04 | 257.65 |
+| llama3-groq-tool-use:8b | 4.7 GB | 50.00% | 2.03 | 261.59 |
+| qwen3:4b | 2.5 GB | 50.00% | 80.61 | 32.65 | 
+| qwen3:8b | 5.2 GB | | | | 
+| qwen3:14b | 9.3 GB | | | |
+| deepseek-coder-v2:16b | 8.9 GB | 60.00% | 1.56 | 376.31 | 
+| gpt-oss:20b | 14 GB | | | |
 
 我们初步的实验得到了以下几点结论：
 
@@ -41,6 +45,10 @@
       "service_type": "Trigger"
     },
 ```
+
+## 在线模型测试
+
+Comming Soon...
 
 ----
 # Step1. 安装依赖库

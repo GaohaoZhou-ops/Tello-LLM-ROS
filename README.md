@@ -22,7 +22,8 @@ The hardware and testing facilities for this project were provided by the `Insti
 # News & Future Work
 
 ## News
-* 2025-08-18: Add pure text file system prompt;
+* 2025-08-17: Uniformed system prompt and tools descriptions;
+* 2025-08-17: Add pure text file system prompt;
 * 2025-08-16: Init repo;
 
 ## TODO

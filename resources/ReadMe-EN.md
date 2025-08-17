@@ -2,28 +2,31 @@
 
 This repository implements LLM control of the Tello drone within the ROS framework, accepting natural language commands as input. The current version only supports calling it through the local Ollama model. We are currently testing calling it using online models and agent systems, and will update the repository as soon as testing is complete.
 
+# Benchmarks
+
+## Local Model Test
 Currently, we have only conducted experiments on the Nvidia Jetson Orin 64GB DK hardware. We will explore testing on a wider range of hardware devices in the future. The system and library information for the experimental environment are as follows:
 
 ![jetson_release](./jetson_release.png)
 
 Based on this, we evaluated the performance of several different local models. For test samples, see the `_define_test_cases` function in the `src/tello_llm_ros/scripts/test_llm_offline.py` script:
 
-|Model|Accuracy|Average Response Time s|Average Generation Rate tokens/s|
-|--|--|--|--|
-|Qwen3:4b| 55.00% | 89.25 | 36.68 |
-|Qwen3:8b| 60.00% | 52.245 | 40.684 |
-|Qwen3:14b| | | |
-|CodeLlama:7b|30.00%|3.265|441.44|
-|CodeLlama:13b||||
-|Llama3.1:8b| | | |
-|DeepSeek-r1:8b| | | |
+|Model| Size | Accuracy|Average Response Time s|Average Generation Rate tokens/s|
+|--|--|--|--|--|
+| codellama:7b | 3.8 GB | 35.00% | 1.58 | 433.53 |
+| codellama:13b | 4.7 GB | 55.00% | 3.44 | 191.98 |
+| llama3.1:8b | 4.9 GB | 60.00% | 2.04 | 257.65 |
+| llama3-groq-tool-use:8b | 4.7 GB | 50.00% | 2.03 | 261.59 |
+| qwen3:4b | 2.5 GB | 50.00% | 80.61 | 32.65 | 
+| qwen3:8b | 5.2 GB | | | | 
+| qwen3:14b | 9.3 GB | | | |
+| deepseek-coder-v2:16b | 8.9 GB | 60.00% | 1.56 | 376.31 | 
+| gpt-oss:20b | 14 GB | | | |
 
 Our preliminary experiments yielded the following conclusions:
 
 1. Most local model test cases failed due to the addition of the `takeoff` and `land` commands.
-
 2. For local models with small parameter counts, using plain text system prompts has a higher success rate than using JSON tool descriptions.
-
 3. Local models tend to split a single action into multiple commands, which may be related to the system prompts. For example, for "rotate 180 degrees," the model would output the command "rotate 90 degrees" twice.
 
 To minimize overall system response time, we implemented direct calls for some explicit commands, such as `takeoff`. These commands are not fed into the model for inference. You can also add more direct commands by modifying the `direct_triggers` field in the `config/llm_tools.json` file as follows. The `takeoff`, `take off`, and `launch` commands can all be directly executed:
@@ -42,6 +45,10 @@ To minimize overall system response time, we implemented direct calls for some e
 "service_type": "Trigger"
 },
 ```
+
+## Online Mode Test
+
+Comming Soon...
 
 ----
 # Step 1. Install Dependencies
