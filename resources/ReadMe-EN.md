@@ -83,9 +83,13 @@ $ ollama pull qwen3:8b
 
 ----
 # How to Use
+We provide multiple usage modes, including testing on a real device and a model, testing a model independently, and testing a model and a mock.
+
+If you wanna to use Xbox joy to control tello, you may use our an other repo:
+
+* XBox Controller Reader: [https://github.com/GaohaoZhou-ops/XboxControllerReader](https://github.com/GaohaoZhou-ops/XboxControllerReader)
 
 ## Stopping Unnecessary Models
-We provide multiple usage modes, including testing on a real device and a model, testing a model independently, and testing a model and a mock.
 
 Before calling a model, to prevent resources from being preempted by an open model, you can terminate the running model using the following command:
 
