@@ -8,3 +8,4 @@ rospkg
 djitellopy
 google-generativeai
 baidu-aip
+openai

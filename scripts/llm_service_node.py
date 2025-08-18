@@ -6,7 +6,7 @@ from tello_llm_ros.srv import LLMQuery, LLMQueryResponse
 from llm_models.ollama_client import OllamaClient
 from llm_models.deepseek_client import DeepseekClient
 from llm_models.gemini_client import GeminiClient
-from llm_models.ernie_client import ErnieClient
+# from llm_models.ernie_client import ErnieClient
 from llm_models.openai_client import OpenAIClient
 from utils.llm_utils import get_system_prompts
 import os
@@ -50,13 +50,13 @@ class LLMServiceNode:
                 return CustomApiClient(self.model_name, server_url=server_url)
             elif self.model_type.lower() == 'openai':
                 return OpenAIClient(self.model_name, api_key=self.api_key)
-            elif self.model_type.lower() == 'ernie':
-                return ErnieClient(
-                    self.model_name, 
-                    app_id=self.app_id, 
-                    api_key=self.api_key, 
-                    secret_key=self.secret_key
-                )
+            # elif self.model_type.lower() == 'ernie':
+            #     return ErnieClient(
+            #         self.model_name, 
+            #         app_id=self.app_id, 
+            #         api_key=self.api_key, 
+            #         secret_key=self.secret_key
+            #     )
             else:
                 rospy.logerr(f"Unsupported model type: {self.model_type}")
                 return None

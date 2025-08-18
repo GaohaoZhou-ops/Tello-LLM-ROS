@@ -1,8 +1,8 @@
 <launch>
     <!-- common model info -->
-    <arg name="model_type"      default="ernie"/>
-    <arg name="model_name"      default="ernie-bot"/>
-    <arg name="api_key"         default="Your API Key" /> 
+    <arg name="model_type"      default="deepseek"/>
+    <arg name="model_name"      default="deepseek-chat"/>
+    <arg name="api_key"         default="sk-03f473bcb0ea4ceaadaf294c826d7be8" /> 
 
     <!-- LAN Server -->
     <arg name="server_url"      default="Your Local Server IPv4 address" />
