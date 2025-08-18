@@ -12,7 +12,11 @@
 
 同时，我们还对部分本地/在线模型进行了测试，你可以查看这篇文档的 `Benchmarks` 章节了解更多详情。
 
-如果你想要通过 XBox 手柄对无人机实现控制，可以参考我们另一个开源项目：[XBox Controller Reader](https://github.com/GaohaoZhou-ops/XboxControllerReader)，该项目的 ROS 版本即将推出。
+如果你想要通过 XBox 手柄对无人机实现控制，可以参考我们另两个开源项目：
+
+* [XBox Controller Reader](https://github.com/GaohaoZhou-ops/XboxControllerReader)：不依赖于ROS可以在远端启动；
+* [xbox_controller_pkg](https://github.com/GaohaoZhou-ops/xbox_controller_pkg)：ROS 节点封装版；
+
 
 如果你想要在部署同一个局域网内的本地服务器推理客户端，那么按照这个篇 [ReadMe](../LAN-Server/ReadMe.md) 文件操作即可。
 

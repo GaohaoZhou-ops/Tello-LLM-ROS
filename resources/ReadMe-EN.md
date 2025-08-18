@@ -12,7 +12,10 @@ This repository implements controlling the Tello drone using LLM within the ROS 
 
 We've also tested some local and online models. Please refer to the `Benchmark` section of this document for more details.
 
-If you want to control the drone with an XBox controller, you can refer to our other open source project: [XBox Controller Reader](https://github.com/GaohaoZhou-ops/XboxControllerReader). The ROS version of this project will be released soon.
+If you want to control the drone with an XBox controller, you can refer to our other open source project:
+
+* [XBox Controller Reader](https://github.com/GaohaoZhou-ops/XboxControllerReader): Independent of ROS, can be started remotely.
+* [xbox_controller_pkg](https://github.com/GaohaoZhou-ops/xbox_controller_pkg): ROS node package.
 
 If you want to deploy the inference client on a local server within the same LAN, just follow the instructions in the [ReadMe](../LAN-Server/ReadMe.md) file.
 
