@@ -4,11 +4,12 @@
 
 |Model|Drone|Support|
 |---|---|---|
-|Ollama Local | Simulate & Real | ✅ |
-|DeepSeek Online |Simulate & Real | ✅ |
+| Ollama Local | Simulate & Real | ✅ |
+| DeepSeek Online |Simulate & Real | ✅ |
 | Gemine Oline | Simulate & Real | ✅ |
 | LAN Server | Simulate & Real | ✅ |
-| GPT-4 Online | | Comming Soon... |
+| GPT-4 Online | Simulate & Real | ✅ |
+| Ernie Online | Simulate & Real | ✅ |
 
 同时，我们还对部分本地/在线模型进行了测试，你可以查看这篇文档的 `Benchmarks` 章节了解更多详情。
 
@@ -24,7 +25,7 @@
 
 ### 2025年08月18日 星期一
 
-新增了 Gemini 在线客户端的支持，以及本地局域网服务器的支持；
+新增了 Gemini、本地局域网服务器、OpenAI 的调用支持；
 
 ### 2025年08月17日 星期日
 

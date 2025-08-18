@@ -4,11 +4,12 @@ This repository implements controlling the Tello drone using LLM within the ROS 
 
 |Model|Drone|Support|
 |---|---|---|
-|Ollama Local | Simulate & Real | ✅ |
-|DeepSeek Online |Simulate & Real | ✅ |
+| Ollama Local | Simulate & Real | ✅ |
+| DeepSeek Online |Simulate & Real | ✅ |
 | Gemine Oline | Simulate & Real | ✅ |
 | LAN Server | Simulate & Real | ✅ |
-| GPT-4 Online | | Comming Soon... |
+| GPT-4 Online | Simulate & Real | ✅ |
+| Ernie Online | Simulate & Real | ✅ |
 
 We've also tested some local and online models. Please refer to the `Benchmark` section of this document for more details.
 
@@ -23,7 +24,7 @@ If you want to deploy the inference client on a local server within the same LAN
 
 ### Monday, August 18, 2025
 
-Added support for the Gemini online client, and support for local LAN servers;
+Added support for the Gemini, local LAN servers, OpenAI client call;
 
 ### Sunday, August 17, 2025
 
