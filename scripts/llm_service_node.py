@@ -40,6 +40,9 @@ class LLMServiceNode:
                 return DeepseekClient(self.model_name, api_key=self.api_key)
             elif self.model_type.lower() == 'gemini':
                 return GeminiClient(self.model_name, api_key=self.api_key)
+            elif self.model_type.lower() == 'custom_api':
+                server_url = rospy.get_param("~server_url", None)
+                return CustomApiClient(self.model_name, server_url=server_url)
             else:
                 rospy.logerr(f"Unsupported model type: {self.model_type}")
                 return None

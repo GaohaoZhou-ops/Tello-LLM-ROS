@@ -4,23 +4,23 @@ This repository implements controlling the Tello drone using LLM within the ROS 
 
 |Model|Drone|Support|
 |---|---|---|
-|Ollama Local|Simulate|✅|
-| |Real|✅|
-|DeepSeek Online|Simulate|✅||
-| |Real|✅||
-|ChatGPT Online|-|Coming Soon...|
+|Ollama Local | Simulate & Real | ✅ |
+|DeepSeek Online |Simulate & Real | ✅ |
+| Gemine Oline | Simulate & Real | ✅ |
+| LAN Server | Simulate & Real | ✅ |
+| GPT-4 Online | | Comming Soon... |
 
 We've also tested some local and online models. Please refer to the `Benchmark` section of this document for more details.
 
-If you want to control the drone with an XBox controller, you can refer to our other open source project:
+If you want to control the drone with an XBox controller, you can refer to our other open source project: [XBox Controller Reader](https://github.com/GaohaoZhou-ops/XboxControllerReader). The ROS version of this project will be released soon.
 
-* XBox Controller Reader: [https://github.com/GaohaoZhou-ops/XboxControllerReader](https://github.com/GaohaoZhou-ops/XboxControllerReader)
+If you want to deploy the inference client on a local server within the same LAN, just follow the instructions in the [ReadMe](../LAN-Server/ReadMe.md) file.
 
 # 🎉 News!
 
 ### Monday, August 18, 2025
 
-Added support for the Gemini online client;
+Added support for the Gemini online client, and support for local LAN servers;
 
 ### Sunday, August 17, 2025
 

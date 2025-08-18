@@ -4,22 +4,23 @@
 
 |Model|Drone|Support|
 |---|---|---|
-|Ollama Local|Simulate|✅|
-| |Real|✅|
-|DeepSeek Online|Simulate|✅||
-| |Real|✅||
-|ChatGPT Online|-|Comming Soon...|
+|Ollama Local | Simulate & Real | ✅ |
+|DeepSeek Online |Simulate & Real | ✅ |
+| Gemine Oline | Simulate & Real | ✅ |
+| LAN Server | Simulate & Real | ✅ |
+| GPT-4 Online | | Comming Soon... |
 
 同时，我们还对部分本地/在线模型进行了测试，你可以查看这篇文档的 `Benchmarks` 章节了解更多详情。
 
 如果你想要通过 XBox 手柄对无人机实现控制，可以参考我们另一个开源项目：[XBox Controller Reader](https://github.com/GaohaoZhou-ops/XboxControllerReader)，该项目的 ROS 版本即将推出。
 
+如果你想要在部署同一个局域网内的本地服务器推理客户端，那么按照这个篇 [ReadMe](../LAN-Server/ReadMe.md) 文件操作即可。
 
 # 🎉 News!
 
 ### 2025年08月18日 星期一
 
-新增了 Gemini 在线客户端的支持；
+新增了 Gemini 在线客户端的支持，以及本地局域网服务器的支持；
 
 ### 2025年08月17日 星期日
 

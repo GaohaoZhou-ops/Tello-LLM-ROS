@@ -2,6 +2,8 @@
     <arg name="model_type"      default="deepseek"/>
     <arg name="model_name"      default="deepseek-chat"/>
     <arg name="api_key"         default="Your API Key" /> 
+    <arg name="server_url"      default="Your Local Server IPv4 address" />
+
     
     <arg name="common_prompt"   default="$(find tello_llm_ros)/config/prompts/common_system_prompt-EN.txt"/>
     <arg name="tools_prompt"    default="$(find tello_llm_ros)/config/prompts/pure_text_tools_description-EN.txt"/>
@@ -10,6 +12,7 @@
         <param name="model_type" value="$(arg model_type)"/>
         <param name="model_name" value="$(arg model_name)"/>
         <param name="api_key"    value="$(arg api_key)"/>
+        <param name="server_url" value="$(arg server_url)" />
         <param name="timeout"    value="100.0"/>
         <param name="common_system_prompt_file" value="$(arg common_prompt)"/>
         <param name="tools_description_file" value="$(arg tools_prompt)"/>
