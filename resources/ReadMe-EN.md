@@ -18,6 +18,10 @@ If you want to control the drone with an XBox controller, you can refer to our o
 
 # 🎉 News!
 
+### Monday, August 18, 2025
+
+Added support for the Gemini online client;
+
 ### Sunday, August 17, 2025
 
 We've extensively refactored this project and now support both local Ollama and online DeepSeek APIs. Clients for more common models are in development, so stay tuned.
