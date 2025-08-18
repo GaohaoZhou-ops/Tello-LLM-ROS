@@ -17,6 +17,31 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
     
+
+def install_and_import(package_name):
+    """
+    尝试导入一个包，如果失败则尝试使用 pip 安装它。
+    """
+    try:
+        # 尝试导入
+        importlib.import_module(package_name)
+        print(f"'{package_name}' 已经安装。")
+    except ImportError:
+        print(f"'{package_name}' 未找到。正在尝试安装...")
+        try:
+            # 执行 pip install 命令
+            subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
+            print(f"'{package_name}' 安装成功。")
+            # 再次尝试导入
+            importlib.import_module(package_name)
+        except subprocess.CalledProcessError:
+            print(f"错误：安装 '{package_name}' 失败。请手动运行 'pip install {package_name}'。")
+            sys.exit(1)
+        except Exception as e:
+            print(f"发生未知错误: {e}")
+            sys.exit(1)
+    
+    
 # Judge file type
 def get_file_type(file_path: str) -> str:
     _, file_extension = os.path.splitext(file_path)

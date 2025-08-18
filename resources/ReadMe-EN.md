@@ -96,9 +96,10 @@ Several parameters in the `launch/llm_service.launch` file determine the model u
 <arg name="model_type" default="deepseek"/>
 <arg name="model_name" default="deepseek-chat"/>
 <arg name="api_key" default="Your online mode API Key" />
+```
 
 * `model_type`: Model type. The current version only supports `ollama` and `deepseek`.
-* `momodel_name`: Model name.
+* `model_name`: Model name.
 * `api_key`: If you are using a local ollama model, this parameter can be left blank.
 
 Run the model performance test using the following command:
@@ -216,10 +217,11 @@ To minimize overall system response time, we use direct calls for some explicit 
 },
 ```
 
-## Online Model Testing 🧠
+## Online Model Testing 🌐
 
 For online models, we have currently only tested the `DeepSeek-Chat` model. Testing of `ChatGPT` and `Gemini` is in progress.
 
 |Model|Accuracy|Average Response Time (s)|
 |--|--|--|
-| DeepSeek-Chat | 80.00% ||
+| DeepSeek-Chat | 80.00% | 4.84 |
+| Gemini-2.5-flash | 85.00% | 5.12 |

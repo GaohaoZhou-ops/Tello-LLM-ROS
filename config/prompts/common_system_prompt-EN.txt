@@ -36,7 +36,6 @@ rotate_clockwise 120 degrees
 move_backward 1.5m
 rotate_clockwise 120 degrees
 move_backward 1.5m
-rotate_clockwise 120 degrees
 [END_COMMANDS]
 
 The following commands are available:

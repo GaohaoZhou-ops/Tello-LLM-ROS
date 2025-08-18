@@ -5,6 +5,7 @@ import rospy
 from tello_llm_ros.srv import LLMQuery, LLMQueryResponse
 from llm_models.ollama_client import OllamaClient
 from llm_models.deepseek_client import DeepseekClient
+from llm_models.gemini_client import GeminiClient
 from utils.llm_utils import get_system_prompts
 import os
 
@@ -12,8 +13,9 @@ class LLMServiceNode:
     def __init__(self):
         rospy.init_node('llm_service_node')
 
-        self.model_name = rospy.get_param("~model_name", "llama3")
+        self.model_name = rospy.get_param("~model_name", "llama3.1:8b")
         self.model_type = rospy.get_param("~model_type", "ollama")
+        self.api_key = rospy.get_param("~api_key", None)
         self.timeout = rospy.get_param("~timeout", 150.0)
         
         common_system_prompt_file = rospy.get_param("~common_system_prompt_file")
@@ -28,14 +30,16 @@ class LLMServiceNode:
 
         rospy.Service('~query', LLMQuery, self.handle_query)
         rospy.loginfo(f"LLM Service Node is ready, using '{self.model_type}' model: '{self.model_name}'.")
+        rospy.loginfo(f"API Key: {self.api_key}")
 
     def _load_model(self):
         try:
             if self.model_type.lower() == 'ollama':
                 return OllamaClient(self.model_name, timeout=self.timeout)
             elif self.model_type.lower() == 'deepseek':
-                api_key = rospy.get_param("~api_key", None)
-                return DeepseekClient(self.model_name, api_key=api_key)
+                return DeepseekClient(self.model_name, api_key=self.api_key)
+            elif self.model_type.lower() == 'gemini':
+                return GeminiClient(self.model_name, api_key=self.api_key)
             else:
                 rospy.logerr(f"Unsupported model type: {self.model_type}")
                 return None

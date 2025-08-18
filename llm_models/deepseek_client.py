@@ -24,7 +24,6 @@ class DeepseekClient(LLMBase):
         self.api_key = os.getenv('DEEPSEEK_API_KEY')
         if not self.api_key:
             self.api_key = kwargs.get('api_key')
-
         if not self.api_key:
             rospy.logerr("DeepSeek API key not found. Please set the DEEPSEEK_API_KEY environment variable or provide it as a ROS param.")
             raise ValueError("DeepSeek API key is missing.")

@@ -6,3 +6,4 @@ pyyaml
 cryptography
 rospkg
 djitellopy
+google-generativeai
