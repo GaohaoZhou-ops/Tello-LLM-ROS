@@ -233,3 +233,5 @@ $ rosrun tello_llm_ros simple_llm_client.py
 |--|--|--|
 | DeepSeek-Chat | 80.00% | 4.84 |
 | Gemini-2.5-flash | 85.00% | 5.12 |
+| GPT-4 | 85.00% | 5.88 |
+| Ernie | 80.00% | 6.13 |
