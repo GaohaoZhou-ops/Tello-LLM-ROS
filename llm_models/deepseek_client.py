@@ -17,7 +17,7 @@ class DeepseekClient(LLMBase):
         Initializes the DeepSeek client.
         - api_key is retrieved from environment variables or ROS params.
         """
-        self.api_base = "https://api.deepseek.com/chat/completions"
+        self.base_url = kwargs.get('base_url')
         
         # 优先从环境变量获取API Key，这更安全。
         # 如果环境变量没有，则尝试从kwargs (来自ROS参数) 获取。
@@ -49,10 +49,10 @@ class DeepseekClient(LLMBase):
 
         try:
             start_time = time.time()
-            response = requests.post(self.api_base, headers=self.headers, json=payload, timeout=30)
+            response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
             end_time = time.time()
             duration_s = end_time - start_time
-            response = requests.post(self.api_base, headers=self.headers, json=payload, timeout=30)
+            response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
             
             # 检查API调用是否成功
             response.raise_for_status() 

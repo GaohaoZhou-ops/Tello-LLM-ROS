@@ -2,14 +2,11 @@
     <!-- common model info -->
     <arg name="model_type"      default="deepseek"/>
     <arg name="model_name"      default="deepseek-chat"/>
-    <arg name="api_key"         default="sk-03f473bcb0ea4ceaadaf294c826d7be8" /> 
+    <arg name="api_key"         default="Your API Key" /> 
+    <arg name="base_url"        default="https://api.deepseek.com/chat/completions" /> 
 
     <!-- LAN Server -->
     <arg name="server_url"      default="Your Local Server IPv4 address" />
-
-    <!-- Baidu -->
-    <arg name="app_id"      default="Your Baidu APP ID" />
-    <arg name="secret_key"      default="Your Baidu Secrer Key" />
 
     <!-- prompt -->
     <arg name="common_prompt"   default="$(find tello_llm_ros)/config/prompts/common_system_prompt-EN.txt"/>
@@ -19,12 +16,11 @@
     <node name="llm_service_node" pkg="tello_llm_ros" type="llm_service_node.py" output="screen">
         <param name="model_type" value="$(arg model_type)"/>
         <param name="model_name" value="$(arg model_name)"/>
-
         <param name="api_key"    value="$(arg api_key)"/>
-        <param name="server_url" value="$(arg server_url)" />
-        <param name="app_id"     value="$(arg app_id)" />
-        <param name="secret_key" value="$(arg secret_key)" />
+        <param name="base_url"   value="$(arg base_url)"/> 
 
+        <!-- LAN Server -->
+        <param name="server_url" value="$(arg server_url)" />
         <param name="timeout"    value="100.0"/>
         
         <param name="common_system_prompt_file" value="$(arg common_prompt)"/>

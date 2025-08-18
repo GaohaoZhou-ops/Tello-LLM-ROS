@@ -1,0 +1,14 @@
+# DeepSeek
+model_type: deepseek
+model_name: deepseek-chat
+base_url: https://api.deepseek.com/chat/completions
+
+# 文心一言
+model_type: ernie
+model_name: ernie-4.0-turbo-8k
+base_url: https://qianfan.baidubce.com/v2
+
+# OpenAI
+model_type: openai
+model_name: gpt-40
+base_url: not necessery

@@ -6,7 +6,7 @@ from tello_llm_ros.srv import LLMQuery, LLMQueryResponse
 from llm_models.ollama_client import OllamaClient
 from llm_models.deepseek_client import DeepseekClient
 from llm_models.gemini_client import GeminiClient
-# from llm_models.ernie_client import ErnieClient
+from llm_models.ernie_client import ErnieClient
 from llm_models.openai_client import OpenAIClient
 from utils.llm_utils import get_system_prompts
 import os
@@ -18,10 +18,8 @@ class LLMServiceNode:
         self.model_name = rospy.get_param("~model_name", "llama3.1:8b")
         self.model_type = rospy.get_param("~model_type", "ollama")
         self.api_key = rospy.get_param("~api_key", None)
+        self.base_url = rospy.get_param("~base_url", None)
         self.timeout = rospy.get_param("~timeout", 150.0)
-        # For Baidu
-        self.app_id = rospy.get_param("~app_id", None)
-        self.secret_key = rospy.get_param("~secret_key", None)
         
         common_system_prompt_file = rospy.get_param("~common_system_prompt_file")
         tools_description_file = rospy.get_param("~tools_description_file")
@@ -40,23 +38,39 @@ class LLMServiceNode:
     def _load_model(self):
         try:
             if self.model_type.lower() == 'ollama':
-                return OllamaClient(self.model_name, timeout=self.timeout)
+                return OllamaClient(
+                    self.model_name, 
+                    timeout=self.timeout
+                )
             elif self.model_type.lower() == 'deepseek':
-                return DeepseekClient(self.model_name, api_key=self.api_key)
+                return DeepseekClient(
+                    self.model_name, 
+                    api_key=self.api_key, 
+                    base_url=self.base_url
+                )
             elif self.model_type.lower() == 'gemini':
-                return GeminiClient(self.model_name, api_key=self.api_key)
+                return GeminiClient(
+                    self.model_name, 
+                    api_key=self.api_key
+                )
             elif self.model_type.lower() == 'custom_api':
                 server_url = rospy.get_param("~server_url", None)
-                return CustomApiClient(self.model_name, server_url=server_url)
+                return CustomApiClient(
+                    self.model_name, 
+                    server_url=server_url
+                )
             elif self.model_type.lower() == 'openai':
-                return OpenAIClient(self.model_name, api_key=self.api_key)
-            # elif self.model_type.lower() == 'ernie':
-            #     return ErnieClient(
-            #         self.model_name, 
-            #         app_id=self.app_id, 
-            #         api_key=self.api_key, 
-            #         secret_key=self.secret_key
-            #     )
+                return OpenAIClient(
+                    self.model_name, 
+                    api_key=self.api_key
+                )
+            elif self.model_type.lower() == 'ernie':
+                rospy.logerr('Ernie client')
+                return ErnieClient(
+                    self.model_name, 
+                    api_key=self.api_key,
+                    base_url=self.base_url
+                )
             else:
                 rospy.logerr(f"Unsupported model type: {self.model_type}")
                 return None
@@ -65,7 +79,7 @@ class LLMServiceNode:
             return None
 
     def handle_query(self, req):
-        rospy.loginfo(f"Received query for LLM: '{req.user_prompt}', sending to model {self.model_name}'")
+        rospy.loginfo(f"Received query for LLM [{self.model_name}]: '{req.user_prompt}'")
         success, plan_text, error_message, duration_s, prompt_tokens, completion_tokens = self.model.query(self.system_prompt, req.user_prompt)
         
         if success:
