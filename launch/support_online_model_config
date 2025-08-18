@@ -12,3 +12,8 @@ base_url: https://qianfan.baidubce.com/v2
 model_type: openai
 model_name: gpt-40
 base_url: not necessery
+
+# Gemnin
+model_type: gemini
+model_name: gemini-2.5-flash
+base_url: not necessery
