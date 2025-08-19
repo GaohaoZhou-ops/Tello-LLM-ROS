@@ -1,43 +1,47 @@
 # Tello LLM ROS
 
-This repository implements controlling the Tello drone using LLM within the ROS framework. It takes natural language commands as input, combines them with prompts and tools definitions, and outputs drone control commands. Currently, multiple debugging combinations are supported:
+This repository implements LLM for controlling the Tello drone within the ROS framework. It takes natural language commands as input, combines them with prompts and tools definitions, and outputs drone control commands. Currently, multiple debugging combinations are supported:
 
-|Model|Drone|Support|
+|Model| Drone | Support |
 |---|---|---|
 | Ollama Local | Simulate & Real | ✅ |
-| DeepSeek Online |Simulate & Real | ✅ |
-| Gemine Oline | Simulate & Real | ✅ |
+| deepseek-chat | Simulate & Real | ✅ |
+| gemini-2.5-flash | Simulate & Real | ✅ |
 | LAN Server | Simulate & Real | ✅ |
-| GPT-4 Online | Simulate & Real | ✅ |
+| gpt-40 Online | Simulate & Real | ✅ |
 | Ernie Online | Simulate & Real | ✅ |
 
-We've also tested some local and online models. Please refer to the `Benchmark` section of this document for more details.
+We also tested some local and online models. Please refer to the `Benchmarks` section of this document for more details.
 
-If you want to control the drone with an XBox controller, you can refer to our other open source project:
+If you want to control the drone using an XBox controller, you can refer to our other two open source projects:
 
-* [XBox Controller Reader](https://github.com/GaohaoZhou-ops/XboxControllerReader): Independent of ROS, can be started remotely.
-* [xbox_controller_pkg](https://github.com/GaohaoZhou-ops/xbox_controller_pkg): ROS node package.
+* [XBox Controller Reader](https://github.com/GaohaoZhou-ops/XboxControllerReader): Independent of ROS, it can be started remotely.
+* [xbox_controller_pkg](https://github.com/GaohaoZhou-ops/xbox_controller_pkg): A ROS node package.
 
-If you want to deploy the inference client on a local server within the same LAN, just follow the instructions in the [ReadMe](../LAN-Server/ReadMe.md) file.
+If you want to deploy a local server inference client within the same LAN, follow the instructions in this [ReadMe](../LAN-Server/ReadMe.md) file.
 
 # 🎉 News!
 
+### Tuesday, August 19, 2025
+
+Unified client code supporting OpenAI protocol calls;
+
 ### Monday, August 18, 2025
 
-Added support for the Gemini, local LAN servers, OpenAI client call;
+Added support for Gemini, local LAN servers, and OpenAI calls;
 
 ### Sunday, August 17, 2025
 
-We've extensively refactored this project and now support both local Ollama and online DeepSeek APIs. Clients for more common models are in development, so stay tuned.
+We've extensively refactored this project and now support both local Ollama and online DeepSeek API calls. Clients for more common models are in development, so stay tuned.
 
 ### Saturday, August 15, 2025
 
-Unified prompt generation for model testing and application.
+Unified prompt generation for model testing and application;
 
 -----
 ## 1. Installation and Deployment 🪤
 
-Whether or not you use local models, you'll need to configure and deploy the basic environment. Follow the steps below to complete this.
+Whether or not you use a local model, you'll need to configure and deploy the basic environment. Follow the steps below to complete this.
 
 ### 1.1 Installing Basic Dependencies
 Before running, you may need to install the following dependencies, including but not limited to:
@@ -70,13 +74,30 @@ $ cd tello_ws
 $ catkin_make
 ```
 
+### 1.4 Google Gemini
+
+If you plan to use Google Gemini If you are using an online model and your conda environment is Python 3.9+, you will also need to install gcloud CIL by referring to the following link. However, please note that this step should be installed in the conda environment we created:
+
+* Google Cloud CIL: [https://cloud.google.com/sdk/docs/install?hl=zh-cn#linux](https://cloud.google.com/sdk/docs/install?hl=zh-cn#linux)
+
+After installation, execute the following command locally and follow the prompts to log in to Google Cloud:
+
+```bash
+$ source ~/.bashrc
+$ gcloud auth application-default login
+```
+
+Then rename the `llm_models/gemini_client_for_py39+.py` file to `gemini_client.py` and overwrite it.
+
+If your conda environment is the same as our test environment, you can use it directly.
+
 -----
 ## 2. How to Use 💻
 
 This project supports both local and online model invocation. This chapter explains how to use the entire project.
 
 ### 2.1 Configuring the Prompt Term Tool 🔔
-Whether you choose to invoke the model locally or online, we recommend carefully reviewing the prompt terms and modifying them, if necessary, to better suit your current task. The project's prompt files for the language model are stored in the `config` directory. The `prompts` directory provides system prompts in multiple languages, as well as pure language prompts. This design is based on the following considerations:
+Whether you choose to invoke the model locally or online, we recommend carefully reviewing the prompt terms and modifying them, if necessary, to better suit your current task. The project's prompt files for the language model are stored in the `config` directory. The `prompts` directory provides system prompts in multiple languages, as well as plain text prompt files. This design is based on the following considerations:
 
 1. Testing has found that using plain text to describe tools significantly improves accuracy for the local model. This is likely due to the extra tokens generated by parsing the JSON file, which is not conducive to long-term memory for small-parameter models.
 2. We also recommend using plain text prompts when calling the online model, as this reduces API token consumption.
@@ -107,10 +128,13 @@ Several parameters in the `launch/llm_service.launch` file determine the model u
 ```
 
 * `model_type`: Model type. The current version only supports `ollama` and `deepseek`.
-* `model_name`: Model name.
-* `api_key`: If you are using a local ollama model, this parameter can be left blank.
 
-Run the model performance test using the following command:
+* `model_name`: Model name.
+* `api_key`: If you are using the local ollama model, this parameter can be left blank.
+
+For information about model types, model names, and URLs, refer to the `launch/supported_model_config` file. This file contains the configuration used during testing.
+
+Then run the model performance test using the following command:
 
 ```bash
 $ cd tello_llm_ros
@@ -126,7 +150,7 @@ Once you've determined the model to use, you can begin the joint debugging phase
 
 #### Local Ollama
 
-If you plan to use a local model, you must pull the model before running. We recommend using the `llama3.1:8b 4.9GB` model, as it strikes a balance between accuracy and output speed in our benchmark, although its accuracy is still lower than that of online models.
+If you plan to use a local model, you must download the model before running. We recommend using the `llama3.1:8b 4.9GB` model because it strikes a balance between accuracy and output speed in our benchmarks, although its accuracy is still lower than that of the online model.
 
 ```bash
 $ ollama pull llama3.1:8b
@@ -179,7 +203,7 @@ After debugging the entire process in simulation, you can start the real device 
 # Benchmarks 🏃
 
 ## Local Model Testing
-Currently, we have only conducted experiments on the `Nvidia Jetson Orin 64GB DK` hardware. In the future, we will try to test on more hardware devices. The system and library information for the experimental environment are as follows:
+Currently, we've only conducted experiments on the Nvidia Jetson Orin 64GB DK. We will attempt to test on a wider range of hardware devices in the future. The system and library information for the experimental environment are as follows:
 
 ![jetson_release](./images/jetson_release.png)
 
@@ -208,7 +232,7 @@ Our preliminary experiments yielded the following conclusions:
 
 4. Code-type local models respond much faster on a single task than general-purpose models.
 
-To minimize overall system response time, we use direct calls for some explicit commands, such as `takeoff`. These commands are not fed into the model for inference. You can also add more direct commands by modifying the `direct_triggers` field in the `config/llm_tools.json` file as follows. The `takeoff`, `take off`, and `launch` commands can all be directly executed:
+To minimize overall system response time, we implement direct calls for some explicit commands, such as `takeoff`. These commands are not fed into the model for inference. You can also add more direct commands by modifying the `direct_triggers` field in the `config/llm_tools.json` file as follows. The `takeoff`, `take off`, and `launch` commands can all be directly responded to:
 
 ```json
 {
@@ -231,7 +255,7 @@ For online models, we have currently only tested the `DeepSeek-Chat` model. Test
 
 |Model|Accuracy|Average Response Time (s)|
 |--|--|--|
-| DeepSeek-Chat | 80.00% | 4.84 |
-| Gemini-2.5-flash | 85.00% | 5.12 |
-| GPT-4 | 85.00% | 5.88 |
+| deepSeek-chat | 80.00% | 4.84 |
+| gemini-2.5-flash | 85.00% | 5.12 |
+| gpt-4o | 90.00% | 4.44 |
 | Ernie | 80.00% | 6.13 |
