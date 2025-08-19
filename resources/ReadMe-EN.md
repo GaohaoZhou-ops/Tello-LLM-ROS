@@ -255,7 +255,9 @@ For online models, we have currently only tested the `DeepSeek-Chat` model. Test
 
 |Model|Accuracy|Average Response Time (s)|
 |--|--|--|
-| deepSeek-chat | 80.00% | 4.84 |
-| gemini-2.5-flash | 85.00% | 5.12 |
-| gpt-4o | 90.00% | 4.44 |
-| Ernie | 80.00% | 6.13 |
+| deepSeek-chat | 85.00% | 4.84 |
+| gemini-2.5-flash | 95.00% | 5.12 |
+| gpt-4o | 95.00% | 4.44 |
+| ernie-4.0-turbo-8k | 95.00% | 2.82 |
+| qwen-plus | 85.00% | 1.10 |
+
