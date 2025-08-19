@@ -3,6 +3,7 @@
     <arg name="launch_rviz" default="true" doc="Display rviz."/>
     <arg name="use_sim" default="true" doc="Set to true to run in simulation mode"/>
     <arg name="image_save_path" default="$(find tello_llm_ros)/images" doc="Set to true to run in simulation mode"/>
+    <arg name="video_save_path" default="$(find tello_llm_ros)/videos" doc="Set to true to run in simulation mode"/>
 
     <arg name="cmd_vel_timeout" default="0.5" doc="Seconds without cmd_vel before stopping"/>
 
@@ -13,6 +14,7 @@
         <param name="use_sim" value="$(arg use_sim)" />
         <param name="cmd_vel_timeout" value="$(arg cmd_vel_timeout)" />
         <param name="image_save_path" value="$(arg image_save_path)" />
+        <param name="video_save_path" value="$(arg video_save_path)" />
     </node>
 
     <!-- sim tf -->

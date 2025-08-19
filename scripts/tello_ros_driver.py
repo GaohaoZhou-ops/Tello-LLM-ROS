@@ -20,27 +20,40 @@ except ImportError:
     Tello = None
 
 from mock_tello import MockTello
-from tello_llm_ros.srv import Move, MoveResponse, TakePicture, TakePictureResponse 
+from tello_llm_ros.srv import Move, MoveResponse
+from tello_llm_ros.srv import TakePicture, TakePictureResponse
+from tello_llm_ros.srv import RecordVideo, RecordVideoResponse 
 
 class TelloROSNode:
     def __init__(self):
         rospy.init_node('tello_ros_node')
 
+        # Namespace
         self.drone_name = rospy.get_param("~drone_name", "tello")
         rospy.loginfo(f"Initializing Tello driver for drone: {self.drone_name}")
 
+        # TF realeation
         self.odom_frame = f"{self.drone_name}/odom"
         self.base_frame = f"{self.drone_name}/base_link"
 
+        # cmd_vel control
         self.use_sim = rospy.get_param("~use_sim", False)
         self.cmd_vel_timeout = rospy.Duration(rospy.get_param("~cmd_vel_timeout", 0.5))
+        self.last_cmd_vel_time = rospy.Time.now()
+
+        # Picture Save
         self.image_save_path = rospy.get_param("~image_save_path", os.path.join(os.path.expanduser('~'), '.ros', 'tello_captures'))
         if not os.path.exists(self.image_save_path):
             os.makedirs(self.image_save_path)
             rospy.loginfo(f"Created image save directory: {self.image_save_path}")
         
-        self.last_cmd_vel_time = rospy.Time.now()
+        # Vide Save
+        self.video_save_path = rospy.get_param("~video_save_path", os.path.join(os.path.expanduser('~'), '.ros', 'tello_videos'))
+        if not os.path.exists(self.video_save_path):
+            os.makedirs(self.video_save_path)
+            rospy.loginfo(f"Created video save directory: {self.video_save_path}")
 
+        # Real and Mock
         if self.use_sim:
             rospy.loginfo(f"Running {self.drone_name} in SIMULATION mode.")
             self.tello = MockTello()
@@ -71,7 +84,8 @@ class TelloROSNode:
         rospy.Service(f'{self.drone_name}/takeoff', Trigger, self.takeoff_service)
         rospy.Service(f'{self.drone_name}/land', Trigger, self.land_service)
         rospy.Service(f'{self.drone_name}/take_picture', TakePicture, self.take_picture_service_cb)
-        
+        rospy.Service(f'{self.drone_name}/record_video', RecordVideo, self.record_video_service_cb)
+
         rospy.Service(f'{self.drone_name}/flip_forward', Trigger, self.flip_forward_service)
         rospy.Service(f'{self.drone_name}/flip_backward', Trigger, self.flip_backward_service)
         rospy.Service(f'{self.drone_name}/flip_left', Trigger, self.flip_left_service)
@@ -93,6 +107,9 @@ class TelloROSNode:
         # <--- 用于线程安全地存储最新图像帧 --->
         self.latest_frame = None
         self.frame_lock = threading.Lock()
+        # <--- 用于线程安全地录制视频的变量 --->
+        self.is_recording = False
+        self.recording_lock = threading.Lock()
         
         self.takeoff_height = 0.8
         self.flip_dist = 0.5
@@ -157,6 +174,79 @@ class TelloROSNode:
                 rospy.logerr(f"Failed to execute '{command}': {e}")
                 return MoveResponse(success=False, message=str(e))
         return handler
+
+
+    def record_video_service_cb(self, req):
+        with self.recording_lock:
+            if self.is_recording:
+                message = "Failed to start recording: another recording is already in progress."
+                rospy.logwarn(message)
+                # 如果正在录制，立即返回一个失败的响应
+                return RecordVideoResponse(success=False, message=message, file_path="")
+            self.is_recording = True
+
+        # 生成文件名和路径
+        filename = f"tello_video_{rospy.Time.now().to_sec():.0f}.mp4"
+        full_path = os.path.join(self.video_save_path, filename)
+        # 创建并启动后台线程进行录制
+        recorder_thread = threading.Thread(target=self._video_recorder_thread, args=(req.duration, full_path))
+        recorder_thread.start()
+        message = f"Successfully started recording for {req.duration} seconds. Video will be saved to {full_path}"
+        rospy.loginfo(message)
+        # 立即返回成功，表示录制已开始
+        return RecordVideoResponse(success=True, message=message, file_path=full_path)
+
+
+    def _video_recorder_thread(self, duration, file_path):
+        rospy.loginfo(f"Recording thread started. Will record for {duration}s.")
+        
+        # 等待第一帧图像以获取视频尺寸
+        while self.latest_frame is None and not rospy.is_shutdown():
+            rospy.loginfo("Recorder waiting for the first frame...")
+            rospy.sleep(0.5)
+        
+        if rospy.is_shutdown(): return
+        
+        with self.frame_lock:
+            frame_height, frame_width, _ = self.latest_frame.shape
+
+        # 初始化 VideoWriter
+        # 使用 'mp4v' 编码器来创建 .mp4 文件
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fps = 30.0 # Tello 视频流通常是 30fps
+        video_writer = cv2.VideoWriter(file_path, fourcc, fps, (frame_width, frame_height))
+
+        if not video_writer.isOpened():
+            rospy.logerr("Failed to open video writer.")
+            with self.recording_lock:
+                self.is_recording = False
+            return
+
+        start_time = rospy.Time.now()
+        end_time = start_time + rospy.Duration(duration)
+
+        while rospy.Time.now() < end_time and not rospy.is_shutdown():
+            frame_to_write = None
+            with self.frame_lock:
+                if self.latest_frame is not None:
+                    # 复制帧以在锁外进行处理
+                    frame_to_write = self.latest_frame.copy()
+            
+            if frame_to_write is not None:
+                # 转换色彩空间 (RGB -> BGR) 并写入文件
+                bgr_frame = cv2.cvtColor(frame_to_write, cv2.COLOR_RGB2BGR)
+                video_writer.write(bgr_frame)
+            
+            # 以近似帧率的频率休眠
+            rospy.sleep(1.0 / fps)
+
+        # 释放资源并更新状态
+        video_writer.release()
+        with self.recording_lock:
+            self.is_recording = False
+        
+        rospy.loginfo(f"Recording finished. Video saved to {file_path}")
+
 
     def take_picture_service_cb(self, req):
         rospy.loginfo("Take picture service called.")
