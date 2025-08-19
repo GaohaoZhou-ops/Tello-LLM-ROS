@@ -1,9 +1,9 @@
 <launch>
     <!-- common model info -->
-    <arg name="model_type"      default="gemini"/>
-    <arg name="model_name"      default="gemini-2.5-flash"/>
-    <arg name="api_key"         default="Your API Key" /> 
-    <arg name="base_url"        default="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" /> 
+    <arg name="model_type"      default="qwen"/>
+    <arg name="model_name"      default="qwen-plus"/>
+    <arg name="api_key"         default="sk-2825c69fea1b4461a057e94a12d118c8" /> 
+    <arg name="base_url"        default="https://dashscope.aliyuncs.com/compatible-mode/v1" /> 
 
     <!-- LAN Server -->
     <arg name="server_url"      default="Your Local Server IPv4 address" />

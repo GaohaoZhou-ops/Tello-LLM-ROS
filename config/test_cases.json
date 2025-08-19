@@ -84,8 +84,8 @@
             "expected_commands": [
                 "move_up 0.5m",
                 "move_down 0.5m",
-                "move_down 0.5m",
-                "move_up 0.5m"
+                "move_up 0.5m",
+                "move_down 0.5m"
             ]
         },
         {

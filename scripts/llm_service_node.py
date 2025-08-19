@@ -5,7 +5,7 @@ import rospy
 from tello_llm_ros.srv import LLMQuery, LLMQueryResponse
 from llm_models.ollama_client import OllamaClient
 from llm_models.gemini_client import GeminiClient
-from llm_models.generic_openai_client import GenericOpenAIClient
+from llm_models.openai_protocol_client import GenericOpenAIClient
 from utils.llm_utils import get_system_prompts
 import os
 
@@ -41,7 +41,7 @@ class LLMServiceNode:
         model_type_lower = self.model_type.lower()
         
         # 定义所有兼容OpenAI协议的模型类型
-        openai_compatible_types = ['openai', 'deepseek', 'ernie']
+        openai_compatible_types = ['openai', 'deepseek', 'ernie', 'qwen', 'huggingface']
         base_url = rospy.get_param("~base_url", None)
 
         try:

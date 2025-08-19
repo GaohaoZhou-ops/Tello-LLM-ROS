@@ -18,3 +18,13 @@ model_type: gemini
 model_name: gemini-2.5-flash
 base_url: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions
 
+# Qwen3
+model_type: qwen
+model_name: qwen-plus
+base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+
+# Huggingface 
+model_type: huggingface
+model_name: deepseek-ai/DeepSeek-V3-0324
+base_url: https://router.huggingface.co/v1
+
