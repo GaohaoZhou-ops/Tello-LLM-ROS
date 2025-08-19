@@ -22,6 +22,7 @@ The hardware and testing facilities for this project were provided by the `Insti
 # News & Future Work
 
 ## News
+* 2025-08-19: Add take picture and record video service;
 * 2025-08-19: Unified the client code that supports the OpenAI protocol calling method;
 * 2025-08-18: Add LAN server client call.
 * 2025-08-18: Add Gemnin online client call.

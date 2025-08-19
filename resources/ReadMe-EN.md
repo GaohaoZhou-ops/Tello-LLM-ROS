@@ -24,7 +24,8 @@ If you want to deploy a local server inference client within the same LAN, follo
 
 ### Tuesday, August 19, 2025
 
-Unified client code supporting OpenAI protocol calls;
+* Added photo and video capture capabilities;
+* Unified client code supporting OpenAI protocol calls;
 
 ### Monday, August 18, 2025
 
