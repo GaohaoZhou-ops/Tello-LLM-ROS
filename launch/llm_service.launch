@@ -4,7 +4,7 @@
     <arg name="model_name"      default="qwen-plus"/>
     <arg name="api_key"         default="Your API Key" /> 
     <arg name="base_url"        default="https://dashscope.aliyuncs.com/compatible-mode/v1" /> 
-    <arg name="enable_history"      default="true"/>
+    <arg name="enable_history"      default="fasle"/>
     <arg name="history_length"      default="10"/>
 
     <!-- LAN Server -->

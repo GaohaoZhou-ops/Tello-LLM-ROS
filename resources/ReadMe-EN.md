@@ -27,6 +27,7 @@ If you want to deploy a local server inference client within the same LAN, follo
 * Added photo and video capture capabilities;
 * Unified client code supporting OpenAI protocol calls;
 * Added the ability to take a photo and record a video of a specified length;
+* Added thinking mode and history information;
 
 ### Monday, August 18, 2025
 
