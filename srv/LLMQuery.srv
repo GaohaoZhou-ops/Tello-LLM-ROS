@@ -1,5 +1,6 @@
 # Request
 string user_prompt
+string[] history
 ---
 # Response
 bool success

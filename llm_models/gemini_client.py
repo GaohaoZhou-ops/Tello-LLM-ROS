@@ -34,17 +34,26 @@ class GeminiClient(LLMBase):
         self.full_url = f"{self.base_url}?key={self.api_key}"
         rospy.loginfo(f"GeminiClient (REST API) initialized for model: {self.model_name}")
 
-    def query(self, system_prompt, user_prompt):
+    def query(self, system_prompt, user_prompt, history=None):
         """
         Queries the Gemini REST API using the 'requests' library.
         """
         start_time = time.time()
         
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
+        # messages = [
+        #     {"role": "system", "content": system_prompt},
+        #     {"role": "user", "content": user_prompt}
+        # ]
         
+        messages = [{"role": "system", "content": system_prompt}]
+        if history:
+            # 假设历史是 [user_msg1, assistant_msg1, user_msg2, ...] 的扁平列表
+            # 我们需要将其转换为带 'role' 的字典列表
+            for i, message_content in enumerate(history):
+                role = "user" if i % 2 == 0 else "assistant"
+                messages.append({"role": role, "content": message_content})
+        messages.append({"role": "user", "content": user_prompt})
+
         payload = {
             "model": self.model_name,
             "contents": [{"parts": [{"text": f"{system_prompt}\n{user_prompt}"}]}]

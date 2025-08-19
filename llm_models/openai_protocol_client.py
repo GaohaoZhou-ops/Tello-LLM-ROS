@@ -38,13 +38,22 @@ class GenericOpenAIClient(LLMBase):
             rospy.logerr(f"Failed to initialize GenericOpenAIClient: {e}")
             raise
 
-    def query(self, system_prompt, user_prompt):
+    def query(self, system_prompt, user_prompt, history=None):
         start_time = time.time()
         
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
+        # messages = [
+        #     {"role": "system", "content": system_prompt},
+        #     {"role": "user", "content": user_prompt}
+        # ]
+        
+        messages = [{"role": "system", "content": system_prompt}]
+        if history:
+            # 假设历史是 [user_msg1, assistant_msg1, user_msg2, ...] 的扁平列表
+            # 我们需要将其转换为带 'role' 的字典列表
+            for i, message_content in enumerate(history):
+                role = "user" if i % 2 == 0 else "assistant"
+                messages.append({"role": role, "content": message_content})
+        messages.append({"role": "user", "content": user_prompt})
 
         try:
             response = self.client.chat.completions.create(

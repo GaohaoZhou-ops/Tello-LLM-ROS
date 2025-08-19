@@ -17,6 +17,7 @@ class LLMServiceNode:
         self.model_type = rospy.get_param("~model_type", "ollama")
         self.api_key = rospy.get_param("~api_key", None)
         self.base_url = rospy.get_param("~base_url", None)
+        self.enable_deep_thinking = rospy.get_param("~enable_deep_thinking", False)
         self.timeout = rospy.get_param("~timeout", 150.0)
         
         common_system_prompt_file = rospy.get_param("~common_system_prompt_file")
@@ -71,7 +72,19 @@ class LLMServiceNode:
 
     def handle_query(self, req):
         rospy.loginfo(f"Received query for LLM [{self.model_name}]: '{req.user_prompt}'")
-        success, plan_text, error_message, duration_s, prompt_tokens, completion_tokens = self.model.query(self.system_prompt, req.user_prompt)
+
+        current_system_prompt = self.system_prompt
+        if self.enable_deep_thinking:
+            # 在系统提示词前加入引导语，让模型进行更深入的思考
+            deep_thinking_prefix = "You are an expert drone pilot. Think step-by-step. First, analyze the user's command carefully. Then, break it down into a sequence of executable drone actions. Finally, format the output strictly within [START_COMMANDS] and [END_COMMANDS] blocks.\n\n"
+            current_system_prompt = deep_thinking_prefix + self.system_prompt
+        success, plan_text, error_message, duration_s, prompt_tokens, completion_tokens = self.model.query(
+            current_system_prompt, 
+            req.user_prompt, 
+            history=req.history # <--- 将 history 传递下去
+        )
+
+        # success, plan_text, error_message, duration_s, prompt_tokens, completion_tokens = self.model.query(self.system_prompt, req.user_prompt)
         
         if success:
             rospy.loginfo(f"Model '{self.model_name}' process done successfully in {duration_s:.3f} seconds.")

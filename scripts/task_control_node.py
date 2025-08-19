@@ -5,6 +5,7 @@ import rospy
 import actionlib
 import json
 import re
+from collections import deque
 from math import pi
 
 # ROS Imports
@@ -24,7 +25,12 @@ class TaskControlNode:
         # --- Parameters ---
         self.drone_name = rospy.get_param("~drone_name", "tello")
         tools_config_path = rospy.get_param("~tools_config_path")
-        
+        self.enable_history = rospy.get_param("~enable_history", False)
+        self.history_length = rospy.get_param("~history_length", 10) # 默认保存最近10条记录 (5轮对话)
+        self.command_history = deque(maxlen=self.history_length)
+        if self.enable_history:
+            rospy.loginfo(f"Command history enabled with a rolling length of {self.history_length}.")
+
         # --- Load Tool Config and Connect to Drone Services ---
         with open(tools_config_path, 'r') as f:
             self.tools_config = json.load(f)
@@ -158,6 +164,10 @@ class TaskControlNode:
         
         rospy.loginfo(f"Received new task: '{goal.user_prompt}'")
         
+        # --- 如果是LLM任务 ---
+        feedback.status = "Command not matched directly. Querying LLM..."
+        self.action_server.publish_feedback(feedback)
+        
         # 1. Check for Direct Command
         tool_name, params = self.parse_direct_command(goal.user_prompt)
         rospy.logwarn(f"Command parased: tool_name:{tool_name}, params:{params}")
@@ -181,6 +191,12 @@ class TaskControlNode:
         self.action_server.publish_feedback(feedback)
         
         try:
+            history_to_send = list(self.command_history) if self.enable_history else []
+            llm_res = self.llm_service_client(
+                user_prompt=goal.user_prompt, 
+                history=history_to_send
+            )
+            
             llm_res = self.llm_service_client(user_prompt=goal.user_prompt)
             if not llm_res.success:
                 result.success = False
@@ -200,6 +216,15 @@ class TaskControlNode:
             result.final_message = "LLM responded, but no valid commands were found in the plan."
             self.action_server.set_aborted(result)
             return
+
+        # <--- 新增：LLM调用成功后，将用户输入和模型输出的计划存入历史 --->
+        if self.enable_history:
+            self.command_history.append(goal.user_prompt) # 存入用户指令
+            # 将命令列表合并成一个字符串存入
+            plan_str = "\n".join(commands)
+            self.command_history.append(plan_str) # 存入模型计划
+            rospy.loginfo(f"History updated. Current history size: {len(self.command_history)}")
+
 
         num_commands = len(commands)
         for i, command_line in enumerate(commands):
