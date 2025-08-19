@@ -106,8 +106,10 @@ def parse_llm_response(plan_text, direct_parser_func=None):
     
     if match:
         command_block = match.group(1).strip()
-        rospy.loginfo("System: Found the last [START_COMMANDS] block. Parsing commands...")
+        # rospy.loginfo("System: Found the last [START_COMMANDS] block. Parsing commands...")
         valid_commands = [cmd.strip() for cmd in command_block.split('\n') if cmd.strip()]
+        rospy.loginfo("Valid commands:")
+        rospy.loginfo(valid_commands)
         return valid_commands
     
     rospy.logwarn("System: Did not find a complete [START_COMMANDS]...[END_COMMANDS] block. Filtering all lines as fallback...")

@@ -25,6 +25,46 @@
       "service_type": "Trigger"
     },
     {
+        "name": "take_picture",
+        "description": "Captures a single image from the drone's camera and saves it to a local file. Returns the path to the saved image.",
+        "ros_service": "/take_picture",
+        "service_type": "TakePicture",
+        "direct_triggers": [
+          "take a picture", 
+          "capture image", 
+          "glance",
+          "photo", 
+          "拍照", 
+          "照相"
+        ],
+        "parameters": []
+    },
+    {
+        "name": "record_video",
+        "description": "Records a video for a specified duration from the drone's camera. Returns the path where the video file will be saved.",
+        "ros_service": "/record_video",
+        "service_type": "RecordVideo",
+        "direct_triggers": [
+            {
+                "pattern": "^(record video|record a video|record|录像|录制视频) ?(for )?(\\d+\\.?\\d*)? ?(s|seconds|second|秒)?$",
+                "params": [
+                    {
+                        "name": "duration",
+                        "group": 3
+                    }
+                ]
+            }
+        ],
+        "parameters": [
+            {
+                "name": "duration",
+                "type": "float32",
+                "description": "The duration of the video to record, in seconds. Default is 10 seconds.",
+                "default": 10.0
+            }
+        ]
+    },
+    {
       "name": "move_forward",
       "description": "Move the drone forward in a straight line by a specified distance in meters once.",
       "direct_triggers": [

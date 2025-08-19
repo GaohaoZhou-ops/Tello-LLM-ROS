@@ -1,5 +1,7 @@
 takeoff: takeoff;
 land: landing;
+take_picture take a image from the live view;
+record_video Ns record N seconds video；
 move_forward N m: fly forward N meters;
 move_backward N m: fly backward N meters;
 move_left N m: parallel move left N meters;

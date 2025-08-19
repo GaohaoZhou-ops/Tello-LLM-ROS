@@ -186,7 +186,7 @@ class TelloROSNode:
             self.is_recording = True
 
         # 生成文件名和路径
-        filename = f"tello_video_{rospy.Time.now().to_sec():.0f}.mp4"
+        filename = f"tello_video_{rospy.Time.now().to_sec():.0f}_{int(req.duration)}s.mp4"
         full_path = os.path.join(self.video_save_path, filename)
         # 创建并启动后台线程进行录制
         recorder_thread = threading.Thread(target=self._video_recorder_thread, args=(req.duration, full_path))

@@ -11,6 +11,8 @@ from math import pi
 from std_srvs.srv import Trigger, TriggerRequest
 from tello_llm_ros.srv import Move, MoveRequest, LLMQuery
 from tello_llm_ros.msg import ExecuteTaskAction, ExecuteTaskFeedback, ExecuteTaskResult
+from tello_llm_ros.srv import TakePicture, TakePictureRequest, RecordVideo, RecordVideoRequest
+from tello_llm_ros.msg import ExecuteTaskAction, ExecuteTaskFeedback, ExecuteTaskResult
 
 # Utils
 from utils.llm_utils import parse_llm_response
@@ -42,13 +44,22 @@ class TaskControlNode:
         rospy.loginfo("Task Control Action Server is ready.")
         
     def _create_drone_service_clients(self):
-        # (This function is identical to _create_service_clients from your original llm_node.py)
         for tool in self.tools_config['tools']:
             tool_name = tool['name']
             service_name = f"/{self.drone_name}{tool['ros_service']}"
             service_type_str = tool['service_type']
-            service_class = {'Trigger': Trigger, 'Move': Move}.get(service_type_str)
-            if not service_class: continue
+            
+            service_class_map = {
+                'Trigger': Trigger, 
+                'Move': Move,
+                'TakePicture': TakePicture,
+                'RecordVideo': RecordVideo
+            }
+            service_class = service_class_map.get(service_type_str)
+
+            if not service_class: 
+                rospy.logwarn(f"Service type '{service_type_str}' for tool '{tool_name}' is not supported. Skipping.")
+                continue
             try:
                 rospy.wait_for_service(service_name, timeout=3.0)
                 self.service_clients[tool_name] = rospy.ServiceProxy(service_name, service_class)
@@ -57,49 +68,89 @@ class TaskControlNode:
                 rospy.logerr(f"Service '{service_name}' not available. Tool '{tool_name}' will be disabled.")
 
     def parse_direct_command(self, user_input):
-        # (This function is identical to the one in your original llm_node.py)
+        """
+        Parses user input to find a matching tool and its parameters.
+        It now checks for a direct match with the tool's name first, 
+        then checks for direct_triggers and regex patterns.
+        """
         clean_input = user_input.lower().strip().replace('_', ' ')
+
         for tool in self.tools_config['tools']:
-            if 'direct_triggers' not in tool: continue
-            for trigger in tool['direct_triggers']:
-                if isinstance(trigger, str):
-                    if clean_input == trigger:
-                        tool_name, params = tool['name'], {}
-                        if 'parameters' in tool:
-                            for p_def in tool['parameters']:
-                                if 'default' in p_def: params[p_def['name']] = p_def['default']
-                        return tool_name, params
-                elif isinstance(trigger, dict) and 'pattern' in trigger:
-                    match = re.match(trigger['pattern'], clean_input, re.IGNORECASE)
-                    if match:
-                        params = {}
-                        for p_def in trigger.get('params', []):
-                            p_name, val = p_def['name'], float(match.group(p_def['group']))
-                            unit = match.group(p_def['unit_group']) if 'unit_group' in p_def else None
-                            if unit in ['cm', 'centimeters']: val /= 100.0
-                            elif unit in ['deg', 'degree', 'degrees']: val *= pi / 180.0
-                            params[p_name] = val
-                        return tool['name'], params
+            # 将工具名也处理成与clean_input相同的格式
+            tool_name_cleaned = tool['name'].replace('_', ' ')
+            if clean_input == tool_name_cleaned:
+                params = {}
+                # 如果是直接匹配，自动填充默认参数
+                if 'parameters' in tool:
+                    for param_def in tool['parameters']:
+                        if 'default' in param_def:
+                            params[param_def['name']] = param_def['default']
+                return tool['name'], params
+
+            # 检查 direct_triggers
+            if 'direct_triggers' in tool:
+                for trigger in tool['direct_triggers']:
+                    if isinstance(trigger, str):
+                        if clean_input == trigger:
+                            params = {}
+                            if 'parameters' in tool:
+                                for p_def in tool['parameters']:
+                                    if 'default' in p_def: params[p_def['name']] = p_def['default']
+                            return tool['name'], params
+                    elif isinstance(trigger, dict) and 'pattern' in trigger:
+                        match = re.match(trigger['pattern'], clean_input, re.IGNORECASE)
+                        if match:
+                            params = {}
+                            for p_def in trigger.get('params', []):
+                                p_name = p_def['name']
+                                val = float(match.group(p_def['group']))
+                                unit = match.group(p_def['unit_group']) if 'unit_group' in p_def else None
+                                if unit in ['cm', 'centimeters']: val /= 100.0
+                                elif unit in ['deg', 'degree', 'degrees']: val *= pi / 180.0
+                                params[p_name] = val
+                            return tool['name'], params
         return None, None
         
+
     def execute_tool(self, tool_name, parameters):
-        # (This function is identical to the one in your original llm_node.py)
         if tool_name not in self.service_clients: return False, f"Error: Tool '{tool_name}' is not available."
-        client, tool_info = self.service_clients[tool_name], next((t for t in self.tools_config['tools'] if t['name'] == tool_name), None)
+        client = self.service_clients[tool_name]
+        tool_info = next((t for t in self.tools_config['tools'] if t['name'] == tool_name), None)
         if not tool_info: return False, f"Error: Tool '{tool_name}' not found in config."
+        
         try:
-            if tool_info['service_type'] == 'Trigger': req = TriggerRequest()
-            elif tool_info['service_type'] == 'Move':
-                param_info, param_name = tool_info['parameters'][0], tool_info['parameters'][0]['name']
+            service_type = tool_info['service_type']
+            request = None
+            
+            if service_type == 'Trigger': 
+                request = TriggerRequest()
+            elif service_type == 'Move':
+                param_info = tool_info['parameters'][0]
+                param_name = param_info['name']
                 value = parameters.get(param_name, param_info.get('default'))
                 if value is None: return False, f"Error: Missing parameter '{param_name}' for tool '{tool_name}'."
-                req = MoveRequest(value=float(value))
-            else: return False, f"Error: Unknown service type for '{tool_name}'."
+                request = MoveRequest(value=float(value))
+            elif service_type == 'TakePicture':
+                request = TakePictureRequest()
+            elif service_type == 'RecordVideo':
+                param_info = tool_info['parameters'][0]
+                param_name = param_info['name']
+                value = parameters.get(param_name, param_info.get('default'))
+                if value is None: return False, f"Error: Missing parameter '{param_name}' for tool '{tool_name}'."
+                request = RecordVideoRequest(duration=float(value))
+            else: 
+                return False, f"Error: Unknown service type '{service_type}' for '{tool_name}'."
             
-            res = client(req)
-            return res.success, res.message
-        except Exception as e: return False, f"An unexpected error occurred executing '{tool_name}': {e}"
-        
+            res = client(request)
+            if service_type in ['TakePicture', 'RecordVideo']:
+                message = f"{res.message}" if res.success else f"Failed '{tool_name}'. Msg: {res.message}"
+                return res.success, message
+            else:
+                return res.success, res.message
+
+        except Exception as e: 
+            return False, f"An unexpected error occurred executing '{tool_name}': {e}"
+
 
     def execute_cb(self, goal):
         feedback = ExecuteTaskFeedback()
@@ -109,6 +160,7 @@ class TaskControlNode:
         
         # 1. Check for Direct Command
         tool_name, params = self.parse_direct_command(goal.user_prompt)
+        rospy.logwarn(f"Command parased: tool_name:{tool_name}, params:{params}")
         if tool_name:
             feedback.status = f"Direct command recognized. Executing '{tool_name}'..."
             self.action_server.publish_feedback(feedback)

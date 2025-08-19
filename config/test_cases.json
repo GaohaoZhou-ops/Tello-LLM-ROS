@@ -163,6 +163,26 @@
                 "rotate_clockwise 180 degrees",
                 "rotate_counter_clockwise 90 degrees"
             ]
+        },
+        {
+            "prompt": "前进1m然后拍一张照片",
+            "expected_commands": [
+                "move_forward 1m",
+                "take_picture"
+            ]
+        },
+        {
+            "prompt": "Take a photo behind you",
+            "expected_commands": [
+                "rotate_counter_clockwise 180 degrees",
+                "take_picture"
+            ]
+        },
+        {
+            "prompt": "Record 5 seconds video",
+            "expected_commands": [
+                "record_video 5s"
+            ]
         }
     ]
 }

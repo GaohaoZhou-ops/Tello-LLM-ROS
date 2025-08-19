@@ -1,5 +1,7 @@
 takeoff: 起飞;
 land: 降落;
+take_picture 拍摄一张照片并保存;
+record_video Ns 录制N秒时长的视频；
 move_forward N m: 向前飞行N米;
 move_backward N m: 向后飞行N米;
 move_left N m: 向左平移N米;
