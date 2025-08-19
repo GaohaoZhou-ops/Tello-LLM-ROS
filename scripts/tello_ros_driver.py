@@ -11,6 +11,7 @@ from cv_bridge import CvBridge
 import tf
 from math import sin, cos, pi
 import numpy as np
+import os, threading
 
 try:
     from djitellopy import Tello
@@ -19,7 +20,7 @@ except ImportError:
     Tello = None
 
 from mock_tello import MockTello
-from tello_llm_ros.srv import Move, MoveResponse
+from tello_llm_ros.srv import Move, MoveResponse, TakePicture, TakePictureResponse 
 
 class TelloROSNode:
     def __init__(self):
@@ -33,6 +34,11 @@ class TelloROSNode:
 
         self.use_sim = rospy.get_param("~use_sim", False)
         self.cmd_vel_timeout = rospy.Duration(rospy.get_param("~cmd_vel_timeout", 0.5))
+        self.image_save_path = rospy.get_param("~image_save_path", os.path.join(os.path.expanduser('~'), '.ros', 'tello_captures'))
+        if not os.path.exists(self.image_save_path):
+            os.makedirs(self.image_save_path)
+            rospy.loginfo(f"Created image save directory: {self.image_save_path}")
+        
         self.last_cmd_vel_time = rospy.Time.now()
 
         if self.use_sim:
@@ -64,6 +70,8 @@ class TelloROSNode:
         
         rospy.Service(f'{self.drone_name}/takeoff', Trigger, self.takeoff_service)
         rospy.Service(f'{self.drone_name}/land', Trigger, self.land_service)
+        rospy.Service(f'{self.drone_name}/take_picture', TakePicture, self.take_picture_service_cb)
+        
         rospy.Service(f'{self.drone_name}/flip_forward', Trigger, self.flip_forward_service)
         rospy.Service(f'{self.drone_name}/flip_backward', Trigger, self.flip_backward_service)
         rospy.Service(f'{self.drone_name}/flip_left', Trigger, self.flip_left_service)
@@ -81,6 +89,10 @@ class TelloROSNode:
         self.x, self.y, self.z, self.yaw = 0.0, 0.0, 0.0, 0.0
         self.current_twist = Twist()
         self.last_update_time = rospy.Time.now()
+        
+        # <--- 用于线程安全地存储最新图像帧 --->
+        self.latest_frame = None
+        self.frame_lock = threading.Lock()
         
         self.takeoff_height = 0.8
         self.flip_dist = 0.5
@@ -145,6 +157,35 @@ class TelloROSNode:
                 rospy.logerr(f"Failed to execute '{command}': {e}")
                 return MoveResponse(success=False, message=str(e))
         return handler
+
+    def take_picture_service_cb(self, req):
+        rospy.loginfo("Take picture service called.")
+        
+        image_to_save = None
+        # 使用线程锁确保我们能安全地获取图像帧
+        with self.frame_lock:
+            if self.latest_frame is None:
+                message = "Failed to capture image: no frame received yet."
+                rospy.logerr(message)
+                return TakePictureResponse(success=False, message=message, file_path="")
+            
+            # 复制帧，以便我们可以快速释放锁，然后在锁外进行耗时的文件操作
+            image_to_save = self.latest_frame.copy()
+        try:
+            # djitellopy 返回的是 RGB 格式，而 OpenCV 保存时需要 BGR 格式
+            bgr_image = cv2.cvtColor(image_to_save, cv2.COLOR_RGB2BGR)
+            # 创建一个带时间戳的唯一文件名
+            filename = f"tello_capture_{rospy.Time.now().to_sec():.0f}.jpg"
+            full_path = os.path.join(self.image_save_path, filename)
+            # 保存图片
+            cv2.imwrite(full_path, bgr_image)
+            message = f"Successfully saved image to {full_path}"
+            rospy.loginfo(message)
+            return TakePictureResponse(success=True, message=message, file_path=full_path)
+        except Exception as e:
+            message = f"Failed to save image: {e}"
+            rospy.logerr(message)
+            return TakePictureResponse(success=False, message=message, file_path="")
 
 
     def update_odometry(self):
@@ -223,6 +264,9 @@ class TelloROSNode:
         
         frame = self.tello.get_frame_read().frame
         if frame is not None:
+            # <--- 在发布前，将最新帧存储起来 --->
+            with self.frame_lock:
+                self.latest_frame = frame
             try:
                 ros_image = self.bridge.cv2_to_imgmsg(frame, "rgb8")
                 ros_image.header.stamp = rospy.Time.now()

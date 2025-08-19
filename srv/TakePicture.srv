@@ -1,0 +1,8 @@
+# --- Request ---
+# 请求可以为空，因为我们只是想触发一次拍照
+# 如果未来需要指定文件名，可以在这里添加 string filename
+---
+# --- Response ---
+bool success          # 指示服务是否成功执行
+string message        # 提供额外信息（如成功消息或错误原因）
+string file_path      # 保存图片的完整本地路径

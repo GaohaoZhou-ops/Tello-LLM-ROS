@@ -18,6 +18,7 @@ catkin_python_setup()
 
 add_service_files(
   FILES
+  TakePicture.srv
   Move.srv
   LLMQuery.srv
 )
