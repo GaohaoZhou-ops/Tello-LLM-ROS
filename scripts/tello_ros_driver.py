@@ -11,7 +11,7 @@ from cv_bridge import CvBridge
 import tf
 from math import sin, cos, pi
 import numpy as np
-import os, threading
+import os, threading, sys
 
 try:
     from djitellopy import Tello
@@ -229,16 +229,22 @@ class TelloROSNode:
             frame_to_write = None
             with self.frame_lock:
                 if self.latest_frame is not None:
-                    # 复制帧以在锁外进行处理
                     frame_to_write = self.latest_frame.copy()
             
             if frame_to_write is not None:
-                # 转换色彩空间 (RGB -> BGR) 并写入文件
                 bgr_frame = cv2.cvtColor(frame_to_write, cv2.COLOR_RGB2BGR)
                 video_writer.write(bgr_frame)
             
-            # 以近似帧率的频率休眠
+            # 计算已过时间和进度，并更新进度条
+            elapsed_time = (rospy.Time.now() - start_time).to_sec()
+            self._print_progress_bar(elapsed_time, duration, prefix='Recording Progress:', suffix='Complete', length=40)
+            
             rospy.sleep(1.0 / fps)
+
+        # <--- 新增：录制结束后，打印100%的完整进度条和换行符 --->
+        self._print_progress_bar(duration, duration, prefix='Recording Progress:', suffix='Complete', length=40)
+        sys.stdout.write('\n') # 打印换行符，结束进度条行
+        sys.stdout.flush()
 
         # 释放资源并更新状态
         video_writer.release()
@@ -321,6 +327,24 @@ class TelloROSNode:
             int(msg.linear.z * 100),
             int(-msg.angular.z * 100)
         )
+        
+    def _print_progress_bar(self, iteration, total, prefix='', suffix='', length=50, fill='█'):
+        """
+        在终端打印一个可更新的进度条，并显示详细的时间信息。
+        """
+        # 确保total不为0以避免除零错误
+        if total == 0:
+            percent = 100
+            iteration = total
+        else:
+            percent = ("{0:.1f}").format(100 * (iteration / float(total)))
+        
+        filled_length = int(length * iteration // total) if total > 0 else 0
+        bar = fill * filled_length + '-' * (length - filled_length)
+        # 使用 sys.stdout.write 来打印，\r 让光标回到行首
+        # 新增了 ({iteration:.1f}/{total:.1f}s) 来显示 "已录时长/总时长"
+        sys.stdout.write(f'\r{prefix} |{bar}| {percent}% ({iteration:.1f}/{total:.1f}s) {suffix}')
+        sys.stdout.flush() # 刷新输出缓冲区，确保立即显示
     
     def initial_pose_callback(self, msg):
         """
