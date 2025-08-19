@@ -1,9 +1,9 @@
 <launch>
     <!-- common model info -->
-    <arg name="model_type"      default="deepseek"/>
-    <arg name="model_name"      default="deepseek-chat"/>
+    <arg name="model_type"      default="gemini"/>
+    <arg name="model_name"      default="gemini-2.5-flash"/>
     <arg name="api_key"         default="Your API Key" /> 
-    <arg name="base_url"        default="https://api.deepseek.com/chat/completions" /> 
+    <arg name="base_url"        default="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" /> 
 
     <!-- LAN Server -->
     <arg name="server_url"      default="Your Local Server IPv4 address" />

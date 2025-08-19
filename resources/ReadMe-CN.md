@@ -2,13 +2,13 @@
 
 这个仓库实现了在 ROS 框架下使用 LLM 对 Tello 无人机进行控制，以自然语言指令作为输入结合提示词和 tools 定义让模型输出无人机控制指令。目前支持多种组合调试方式：
 
-|Model|Drone|Support|
+|Model| Drone | Support |
 |---|---|---|
 | Ollama Local | Simulate & Real | ✅ |
-| DeepSeek Online |Simulate & Real | ✅ |
-| Gemine Oline | Simulate & Real | ✅ |
+| deepseek-chat |Simulate & Real | ✅ |
+| gemini-2.5-flash | Simulate & Real | ✅ |
 | LAN Server | Simulate & Real | ✅ |
-| GPT-4 Online | Simulate & Real | ✅ |
+| gpt-40 Online | Simulate & Real | ✅ |
 | Ernie Online | Simulate & Real | ✅ |
 
 同时，我们还对部分本地/在线模型进行了测试，你可以查看这篇文档的 `Benchmarks` 章节了解更多详情。
@@ -22,6 +22,10 @@
 如果你想要在部署同一个局域网内的本地服务器推理客户端，那么按照这个篇 [ReadMe](../LAN-Server/ReadMe.md) 文件操作即可。
 
 # 🎉 News!
+
+### 2025年08月19日 星期二
+
+统一了支持 openai 协议调用方式的客户端代码；
 
 ### 2025年08月18日 星期一
 
@@ -72,6 +76,23 @@ $ cd tello_ws
 $ catkin_make
 ```
 
+### 1.4 Google Gemini
+
+如果你准备使用 Google Gemini 在线模型，并且你的 conda 环境是 `python 3.9+`，那么还需要参考下面的链接安装 `gcloud CIL`，但是要注意这一步尽量在我们的创建的 conda 环境中安装：
+
+* Google Cloud CIL：[https://cloud.google.com/sdk/docs/install?hl=zh-cn#linux](https://cloud.google.com/sdk/docs/install?hl=zh-cn#linux)
+
+完成安装后在本地执行下面的命令并根据提示完成 Google Cloud 的登陆操作：
+
+```bash
+$ source ~/.bashrc
+$ gcloud auth application-default login
+```
+
+然后将 `llm_models/gemini_client_for_py39+.py` 文件重命名为 `gemini_client.py` 并覆盖。
+
+如果你的 conda 环境和我们测试环境一样，那么可以直接使用。
+
 -----
 ## 2. 如何使用 💻
 
@@ -113,7 +134,9 @@ $ catkin_make
 * `model_name`：模型名；
 * `api_key`：如果你使用的是本地 ollama 模型，那么这个参数可以为空；
 
-使用下面的命令运行模型性能测试：
+有关模型类型、模型名、url 连接可以参考文件 `launch/supported_model_config`，这个文件中的内容是我们测试时使用的配置。
+
+然后使用下面的命令运行模型性能测试：
 
 ```bash
 $ cd tello_llm_ros
@@ -231,7 +254,7 @@ $ rosrun tello_llm_ros simple_llm_client.py
 
 |Model|准确率|平均响应时长 s|
 |--|--|--|
-| DeepSeek-Chat | 80.00% | 4.84 |
-| Gemini-2.5-flash | 85.00% | 5.12 |
-| GPT-4 | 85.00% | 5.88 |
+| deepSeek-chat | 80.00% | 4.84 |
+| gemini-2.5-flash | 85.00% | 5.12 |
+| gpt-4o | 90.00% | 4.44 |
 | Ernie | 80.00% | 6.13 |

@@ -6,6 +6,5 @@ pyyaml
 cryptography
 rospkg
 djitellopy
-google-generativeai
 baidu-aip
 openai

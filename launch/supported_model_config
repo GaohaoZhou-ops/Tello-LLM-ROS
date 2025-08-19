@@ -1,7 +1,7 @@
 # DeepSeek
 model_type: deepseek
 model_name: deepseek-chat
-base_url: https://api.deepseek.com/chat/completions
+base_url: https://api.deepseek.com/v1
 
 # 文心一言
 model_type: ernie
@@ -13,7 +13,8 @@ model_type: openai
 model_name: gpt-40
 base_url: not necessery
 
-# Gemnin
+# Gemini
 model_type: gemini
 model_name: gemini-2.5-flash
-base_url: not necessery
+base_url: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions
+

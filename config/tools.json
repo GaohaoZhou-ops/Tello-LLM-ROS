@@ -17,7 +17,8 @@
       "description": "Initiates the drone's automatic landing sequence...",
       "direct_triggers": [
         "land",
-        "touch down"
+        "touch down",
+        "landing"
       ],
       "parameters": [],
       "ros_service": "/land",
