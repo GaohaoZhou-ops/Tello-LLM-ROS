@@ -22,7 +22,7 @@ The hardware and testing facilities for this project were provided by the `Insti
 # News & Future Work
 
 ## News
-* 🎉 2025-08-19: Finish V0.1 release 🍰 !
+* 🎉 2025-08-19: Finish <font color=green>**V0.1**</font> release 🍰 !
 * 2025-08-19: Add thinking and history mode;
 * 2025-08-19: Add take picture and record video service;
 * 2025-08-19: Unified the client code that supports the OpenAI protocol calling method;
