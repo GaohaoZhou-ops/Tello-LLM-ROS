@@ -47,8 +47,6 @@ class GeminiClient(LLMBase):
         
         messages = [{"role": "system", "content": system_prompt}]
         if history:
-            # 假设历史是 [user_msg1, assistant_msg1, user_msg2, ...] 的扁平列表
-            # 我们需要将其转换为带 'role' 的字典列表
             for i, message_content in enumerate(history):
                 role = "user" if i % 2 == 0 else "assistant"
                 messages.append({"role": role, "content": message_content})
@@ -73,7 +71,7 @@ class GeminiClient(LLMBase):
             plan_text = response_data['candidates'][0]['content']['parts'][0]['text']
             
             # REST API响应中通常不直接提供token数，需要单独API计算
-            # 为保持接口统一，我们暂时返回0
+            # 为保持接口统一，暂时返回0
             prompt_tokens = 0
             completion_tokens = 0
 

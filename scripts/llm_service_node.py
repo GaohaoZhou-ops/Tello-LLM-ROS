@@ -75,17 +75,14 @@ class LLMServiceNode:
 
         current_system_prompt = self.system_prompt
         if self.enable_deep_thinking:
-            # 在系统提示词前加入引导语，让模型进行更深入的思考
             deep_thinking_prefix = "You are an expert drone pilot. Think step-by-step. First, analyze the user's command carefully. Then, break it down into a sequence of executable drone actions. Finally, format the output strictly within [START_COMMANDS] and [END_COMMANDS] blocks.\n\n"
             current_system_prompt = deep_thinking_prefix + self.system_prompt
         success, plan_text, error_message, duration_s, prompt_tokens, completion_tokens = self.model.query(
             current_system_prompt, 
             req.user_prompt, 
-            history=req.history # <--- 将 history 传递下去
+            history=req.history
         )
 
-        # success, plan_text, error_message, duration_s, prompt_tokens, completion_tokens = self.model.query(self.system_prompt, req.user_prompt)
-        
         if success:
             rospy.loginfo(f"Model '{self.model_name}' process done successfully in {duration_s:.3f} seconds.")
         else:

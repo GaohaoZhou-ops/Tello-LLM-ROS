@@ -1,6 +1,5 @@
 # --- Request ---
-# 视频录制的时长（秒）
-float32 duration
+float32 duration      # 视频录制的时长（秒）
 ---
 # --- Response ---
 bool success          # 指示录制是否成功启动

@@ -24,11 +24,9 @@ def run_my_custom_model(model_name, system_prompt, user_prompt):
     print(f"User Prompt: {user_prompt}")
     
     # === 在这里替换为您模型的真实调用逻辑 ===
-    # 模拟模型思考
     time.sleep(random.uniform(1.5, 4.0)) 
     
     # 模拟模型输出
-    # 真实场景下，您应该从模型结果中获取这些信息
     mock_plan = (
         "[START_COMMANDS]\n"
         f"takeoff\n"

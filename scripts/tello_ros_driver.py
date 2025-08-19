@@ -241,9 +241,8 @@ class TelloROSNode:
             
             rospy.sleep(1.0 / fps)
 
-        # <--- 新增：录制结束后，打印100%的完整进度条和换行符 --->
         self._print_progress_bar(duration, duration, prefix='Recording Progress:', suffix='Complete', length=40)
-        sys.stdout.write('\n') # 打印换行符，结束进度条行
+        sys.stdout.write('\n')
         sys.stdout.flush()
 
         # 释放资源并更新状态
@@ -341,8 +340,6 @@ class TelloROSNode:
         
         filled_length = int(length * iteration // total) if total > 0 else 0
         bar = fill * filled_length + '-' * (length - filled_length)
-        # 使用 sys.stdout.write 来打印，\r 让光标回到行首
-        # 新增了 ({iteration:.1f}/{total:.1f}s) 来显示 "已录时长/总时长"
         sys.stdout.write(f'\r{prefix} |{bar}| {percent}% ({iteration:.1f}/{total:.1f}s) {suffix}')
         sys.stdout.flush() # 刷新输出缓冲区，确保立即显示
     

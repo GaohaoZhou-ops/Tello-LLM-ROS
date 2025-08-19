@@ -8,14 +8,12 @@ import re
 from collections import deque
 from math import pi
 
-# ROS Imports
 from std_srvs.srv import Trigger, TriggerRequest
 from tello_llm_ros.srv import Move, MoveRequest, LLMQuery
 from tello_llm_ros.msg import ExecuteTaskAction, ExecuteTaskFeedback, ExecuteTaskResult
 from tello_llm_ros.srv import TakePicture, TakePictureRequest, RecordVideo, RecordVideoRequest
 from tello_llm_ros.msg import ExecuteTaskAction, ExecuteTaskFeedback, ExecuteTaskResult
 
-# Utils
 from utils.llm_utils import parse_llm_response
 
 class TaskControlNode:
@@ -82,7 +80,6 @@ class TaskControlNode:
         clean_input = user_input.lower().strip().replace('_', ' ')
 
         for tool in self.tools_config['tools']:
-            # 将工具名也处理成与clean_input相同的格式
             tool_name_cleaned = tool['name'].replace('_', ' ')
             if clean_input == tool_name_cleaned:
                 params = {}
@@ -217,12 +214,10 @@ class TaskControlNode:
             self.action_server.set_aborted(result)
             return
 
-        # <--- 新增：LLM调用成功后，将用户输入和模型输出的计划存入历史 --->
         if self.enable_history:
-            self.command_history.append(goal.user_prompt) # 存入用户指令
-            # 将命令列表合并成一个字符串存入
+            self.command_history.append(goal.user_prompt)
             plan_str = "\n".join(commands)
-            self.command_history.append(plan_str) # 存入模型计划
+            self.command_history.append(plan_str)
             rospy.loginfo(f"History updated. Current history size: {len(self.command_history)}")
 
 

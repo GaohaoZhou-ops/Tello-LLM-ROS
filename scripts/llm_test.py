@@ -4,7 +4,6 @@
 import rospy
 import json
 import os
-# 导入我们需要的服务类型
 from tello_llm_ros.srv import LLMQuery 
 from utils.llm_utils import parse_llm_response, bcolors
 
@@ -40,7 +39,6 @@ class LLMServiceTester:
         rospy.loginfo(f"LLM Service Tester is ready.")
 
     def _load_test_cases_from_file(self, file_path):
-        # (此函数无需改变)
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -131,7 +129,6 @@ class LLMServiceTester:
 
 if __name__ == '__main__':
     try:
-        # 确保服务节点已经启动并准备就绪
         rospy.sleep(1.0) 
         tester = LLMServiceTester()
         if not rospy.is_shutdown():
