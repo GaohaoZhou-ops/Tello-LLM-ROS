@@ -211,7 +211,7 @@ Currently, we've only conducted experiments on the Nvidia Jetson Orin 64GB DK. W
 
 ![jetson_release](./images/jetson_release.png)
 
-Based on this, we evaluated the performance of several different local models. For test samples, see the `_define_test_cases` function in the `src/tello_llm_ros/scripts/test_llm_offline.py` script:
+Based on this, we evaluated the performance of several different local models. For test samples, see the `src/tello_llm_ros/config/test_cases.json` file:
 
 |Model|Size|Accuracy|Average Response Time s|Average Generation Rate tokens/s|
 |--|--|--|--|--|

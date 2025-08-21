@@ -213,7 +213,7 @@ $ rosrun tello_llm_ros simple_llm_client.py
 
 ![jetson_release](./images/jetson_release.png)
 
-在此基础上我们对多个不同的本地模型性能与表现进行了评估，测试样本可以查看脚本 `src/tello_llm_ros/scripts/test_llm_offline.py` 中 `_define_test_cases` 函数的内容：
+在此基础上我们对多个不同的本地模型性能与表现进行了评估，测试样本可以查看文件 `src/tello_llm_ros/config/test_cases.json` 中的示例：
 
 |Model|大小|准确率|平均响应时长 s|平均生成速度 tokens/s|
 |--|--|--|--|--|
