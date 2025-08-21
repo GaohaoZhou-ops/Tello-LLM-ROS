@@ -24,6 +24,7 @@ If you want to deploy a local server inference client within the same LAN, follo
 
 ### Tuesday, August 19, 2025
 
+* V0.1.0 version released, the next version will introduce Agent framework, so stay tuned!
 * Added photo and video capture capabilities;
 * Unified client code supporting OpenAI protocol calls;
 * Added the ability to take a photo and record a video of a specified length;
@@ -31,15 +32,15 @@ If you want to deploy a local server inference client within the same LAN, follo
 
 ### Monday, August 18, 2025
 
-Added support for Gemini, local LAN servers, and OpenAI calls;
+* Added support for Gemini, local LAN servers, and OpenAI calls;
 
 ### Sunday, August 17, 2025
 
-We've extensively refactored this project and now support both local Ollama and online DeepSeek API calls. Clients for more common models are in development, so stay tuned.
+* We've extensively refactored this project and now support both local Ollama and online DeepSeek API calls. Clients for more common models are in development, so stay tuned.
 
 ### Saturday, August 15, 2025
 
-Unified prompt generation for model testing and application;
+* Unified prompt generation for model testing and application;
 
 -----
 ## 1. Installation and Deployment 🪤
